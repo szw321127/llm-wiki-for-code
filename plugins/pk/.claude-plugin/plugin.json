@@ -1,0 +1,15 @@
+{
+  "name": "pk",
+  "version": "0.1.16",
+  "description": "Project knowledge skills for Claude Code.",
+  "author": {
+    "name": "hugo"
+  },
+  "license": "MIT",
+  "keywords": [
+    "project-knowledge",
+    "knowledge-graph",
+    "claude-code-skills"
+  ],
+  "skills": "./skills/"
+}

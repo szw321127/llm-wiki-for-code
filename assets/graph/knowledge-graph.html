@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>项目知识图谱</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%230b5d52'/%3E%3Cpath d='M18 20h10l8 13 8-13h10L41 44h-8L18 20Z' fill='%23f4efe6'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./knowledge-graph.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <div class="main-grid">
+        <main class="graph-panel panel">
+          <section class="panel-section graph-panel-section">
+            <div class="graph-panel-head">
+              <div class="graph-panel-copy">
+                <h2>交互式图谱画布</h2>
+                <p id="graph-summary" class="muted">正在加载图谱数据...</p>
+              </div>
+
+              <div class="graph-panel-tools">
+                <label class="graph-panel-search" for="search-input">
+                  <span class="graph-panel-search-label">搜索</span>
+                  <input
+                    id="search-input"
+                    type="search"
+                    placeholder="搜索主题、候选方案、场景、约束、规则"
+                  />
+                </label>
+
+                <div class="panel-meta panel-meta-legend">
+                  <span class="legend-item legend-practice">实践</span>
+                  <span class="legend-item legend-option">推荐方案</span>
+                  <span class="legend-item legend-incubating">孵化中</span>
+                  <span id="node-count" class="meta-chip">0 / 0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="canvas-shell">
+              <div class="canvas-hint">
+                <span>拖拽节点</span>
+                <span>滚轮缩放</span>
+                <span>拖动画布平移</span>
+              </div>
+
+              <svg
+                id="graph-canvas"
+                class="graph-canvas"
+                viewBox="0 0 1200 820"
+                role="img"
+                aria-label="实践知识图谱画布"
+                tabindex="0"
+              >
+                <g id="graph-viewport">
+                  <g id="graph-edges"></g>
+                  <g id="graph-nodes"></g>
+                </g>
+              </svg>
+
+              <div id="graph-empty-state" class="empty-state canvas-empty" hidden>
+                当前筛选条件下没有可展示的节点。
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="details panel graph-drawer">
+          <section class="panel-section panel-section-large">
+            <div class="section-heading detail-heading">
+              <div class="detail-heading-main">
+                <h2>详情抽屉</h2>
+              </div>
+              <div class="detail-heading-side">
+                <span id="detail-type" class="tag subtle">未选择</span>
+              </div>
+            </div>
+            <div id="detail-panel" class="detail-panel detail-panel-column">
+              <p class="empty-state">点击图谱节点查看详情。</p>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="detail-reading panel">
+        <div class="panel-section">
+          <div class="section-heading detail-reading-heading">
+            <h2>正文与证据</h2>
+          </div>
+          <div id="detail-reading-panel" class="detail-reading-grid">
+            <p class="empty-state">点击图谱节点查看正文与证据。</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script type="module" src="./knowledge-graph.js"></script>
+  </body>
+</html>

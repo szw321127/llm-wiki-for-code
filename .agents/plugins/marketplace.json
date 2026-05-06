@@ -1,0 +1,20 @@
+{
+  "name": "local-project-knowledge",
+  "interface": {
+    "displayName": "Local Project Knowledge"
+  },
+  "plugins": [
+    {
+      "name": "pk",
+      "source": {
+        "source": "local",
+        "path": "./plugins/pk"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

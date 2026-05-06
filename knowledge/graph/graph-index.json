@@ -1,0 +1,895 @@
+{
+  "generated_at": "2026-04-30T09:09:14.981Z",
+  "project_views": [
+    {
+      "id": "global",
+      "title": "全局视角",
+      "synthetic": true
+    },
+    {
+      "id": "project-example-enterprise-web",
+      "title": "示例企业 Web 项目",
+      "synthetic": false
+    },
+    {
+      "id": "project-global",
+      "title": "全局基线视角",
+      "synthetic": false
+    }
+  ],
+  "counts_by_type": {
+    "constraint": 4,
+    "context": 4,
+    "option": 12,
+    "practice": 6,
+    "project_profile": 2,
+    "rule": 4
+  },
+  "by_type": {
+    "constraint": [
+      "constraint-auditability",
+      "constraint-backward-compatibility",
+      "constraint-low-operational-complexity",
+      "constraint-no-extra-runtime"
+    ],
+    "context": [
+      "context-automation-script",
+      "context-backend-api",
+      "context-engineering-workflow",
+      "context-frontend-crud"
+    ],
+    "option": [
+      "option-centralized-config",
+      "option-centralized-error-handler",
+      "option-direct-call",
+      "option-exponential-backoff",
+      "option-inline-config",
+      "option-inline-error-handler",
+      "option-local-status-handling",
+      "option-no-retry",
+      "option-plain-logging",
+      "option-shared-status-layer",
+      "option-structured-logging",
+      "option-unified-client"
+    ],
+    "practice": [
+      "practice-config-management",
+      "practice-error-handling",
+      "practice-http-client",
+      "practice-logging",
+      "practice-retry-strategy",
+      "practice-task-status-feedback"
+    ],
+    "project_profile": [
+      "project-example-enterprise-web",
+      "project-global"
+    ],
+    "rule": [
+      "rule-centralized-config-default",
+      "rule-shared-status-first",
+      "rule-structured-log-first",
+      "rule-use-unified-client"
+    ]
+  },
+  "practice_options": {
+    "practice-config-management": [
+      "option-centralized-config",
+      "option-inline-config"
+    ],
+    "practice-error-handling": [
+      "option-centralized-error-handler",
+      "option-inline-error-handler"
+    ],
+    "practice-http-client": [
+      "option-direct-call",
+      "option-unified-client"
+    ],
+    "practice-logging": [
+      "option-plain-logging",
+      "option-structured-logging"
+    ],
+    "practice-retry-strategy": [
+      "option-exponential-backoff",
+      "option-no-retry"
+    ],
+    "practice-task-status-feedback": [
+      "option-local-status-handling",
+      "option-shared-status-layer"
+    ]
+  },
+  "search_terms": {
+    "constraint-auditability": [
+      "constraint-auditability"
+    ],
+    "必须可审计": [
+      "constraint-auditability"
+    ],
+    "要求关键行为": [
+      "constraint-auditability"
+    ],
+    "异常和配置变更可以被追踪": [
+      "constraint-auditability"
+    ],
+    "复盘和解释": [
+      "constraint-auditability"
+    ],
+    "audit": [
+      "constraint-auditability",
+      "rule-structured-log-first"
+    ],
+    "compliance": [
+      "constraint-auditability"
+    ],
+    "traceability": [
+      "constraint-auditability"
+    ],
+    "constraint-backward-compatibility": [
+      "constraint-backward-compatibility"
+    ],
+    "必须兼容既有接口": [
+      "constraint-backward-compatibility"
+    ],
+    "要求新方案不能轻易破坏旧调用方式": [
+      "constraint-backward-compatibility"
+    ],
+    "旧配置或已有集成链路": [
+      "constraint-backward-compatibility"
+    ],
+    "compatibility": [
+      "constraint-backward-compatibility"
+    ],
+    "migration": [
+      "constraint-backward-compatibility"
+    ],
+    "legacy": [
+      "constraint-backward-compatibility"
+    ],
+    "constraint-low-operational-complexity": [
+      "constraint-low-operational-complexity"
+    ],
+    "运维复杂度必须可控": [
+      "constraint-low-operational-complexity"
+    ],
+    "要求方案在上线": [
+      "constraint-low-operational-complexity"
+    ],
+    "排障": [
+      "constraint-low-operational-complexity"
+    ],
+    "培训和长期维护上的附加复杂度保持可控": [
+      "constraint-low-operational-complexity"
+    ],
+    "operations": [
+      "constraint-low-operational-complexity"
+    ],
+    "complexity": [
+      "constraint-low-operational-complexity"
+    ],
+    "support": [
+      "constraint-low-operational-complexity"
+    ],
+    "constraint-no-extra-runtime": [
+      "constraint-no-extra-runtime"
+    ],
+    "不能引入额外运行时": [
+      "constraint-no-extra-runtime"
+    ],
+    "要求方案尽量依赖已有语言和平台能力": [
+      "constraint-no-extra-runtime"
+    ],
+    "避免引入新的服务或守护进程": [
+      "constraint-no-extra-runtime"
+    ],
+    "runtime": [
+      "constraint-no-extra-runtime"
+    ],
+    "dependency": [
+      "constraint-no-extra-runtime"
+    ],
+    "portability": [
+      "constraint-no-extra-runtime"
+    ],
+    "context-automation-script": [
+      "context-automation-script"
+    ],
+    "自动化脚本与批处理任务": [
+      "context-automation-script"
+    ],
+    "面向命令行脚本": [
+      "context-automation-script"
+    ],
+    "定时任务": [
+      "context-automation-script"
+    ],
+    "数据处理和自动化巡检等非交互式执行场景": [
+      "context-automation-script"
+    ],
+    "script": [
+      "context-automation-script"
+    ],
+    "automation": [
+      "context-automation-script"
+    ],
+    "batch": [
+      "context-automation-script"
+    ],
+    "cron": [
+      "context-automation-script"
+    ],
+    "context-backend-api": [
+      "context-backend-api"
+    ],
+    "后端": [
+      "context-backend-api"
+    ],
+    "api": [
+      "context-backend-api",
+      "option-unified-client",
+      "practice-http-client"
+    ],
+    "与服务编排": [
+      "context-backend-api"
+    ],
+    "面向": [
+      "context-backend-api"
+    ],
+    "暴露": [
+      "context-backend-api"
+    ],
+    "服务聚合": [
+      "context-backend-api"
+    ],
+    "外部系统调用和稳定性治理的后端服务场景": [
+      "context-backend-api"
+    ],
+    "backend": [
+      "context-backend-api"
+    ],
+    "service": [
+      "context-backend-api"
+    ],
+    "integration": [
+      "context-backend-api"
+    ],
+    "context-engineering-workflow": [
+      "context-engineering-workflow"
+    ],
+    "工程流程与发布治理": [
+      "context-engineering-workflow"
+    ],
+    "面向构建": [
+      "context-engineering-workflow"
+    ],
+    "发布": [
+      "context-engineering-workflow"
+    ],
+    "流水线": [
+      "context-engineering-workflow"
+    ],
+    "质量门禁和团队协作规范的工程流程场景": [
+      "context-engineering-workflow"
+    ],
+    "workflow": [
+      "context-engineering-workflow",
+      "option-shared-status-layer",
+      "practice-task-status-feedback"
+    ],
+    "release": [
+      "context-engineering-workflow"
+    ],
+    "ci": [
+      "context-engineering-workflow",
+      "project-example-enterprise-web"
+    ],
+    "governance": [
+      "context-engineering-workflow",
+      "project-example-enterprise-web",
+      "rule-centralized-config-default",
+      "rule-use-unified-client"
+    ],
+    "context-frontend-crud": [
+      "context-frontend-crud"
+    ],
+    "前端": [
+      "context-frontend-crud"
+    ],
+    "crud": [
+      "context-frontend-crud"
+    ],
+    "与交互页面": [
+      "context-frontend-crud"
+    ],
+    "面向列表": [
+      "context-frontend-crud"
+    ],
+    "表单": [
+      "context-frontend-crud"
+    ],
+    "详情": [
+      "context-frontend-crud"
+    ],
+    "查询和交互反馈较多的前端页面场景": [
+      "context-frontend-crud"
+    ],
+    "frontend": [
+      "context-frontend-crud"
+    ],
+    "form": [
+      "context-frontend-crud"
+    ],
+    "table": [
+      "context-frontend-crud"
+    ],
+    "option-centralized-config": [
+      "option-centralized-config"
+    ],
+    "集中配置入口": [
+      "option-centralized-config"
+    ],
+    "通过统一配置模块": [
+      "option-centralized-config"
+    ],
+    "配置文件或环境变量入口管理默认值和覆盖顺序": [
+      "option-centralized-config"
+    ],
+    "env": [
+      "option-centralized-config"
+    ],
+    "config-file": [
+      "option-centralized-config"
+    ],
+    "schema": [
+      "option-centralized-config"
+    ],
+    "option-centralized-error-handler": [
+      "option-centralized-error-handler"
+    ],
+    "集中式错误处理入口": [
+      "option-centralized-error-handler"
+    ],
+    "通过统一错误入口完成分类": [
+      "option-centralized-error-handler"
+    ],
+    "日志记录": [
+      "option-centralized-error-handler"
+    ],
+    "错误映射和对外反馈": [
+      "option-centralized-error-handler"
+    ],
+    "middleware": [
+      "option-centralized-error-handler"
+    ],
+    "interceptor": [
+      "option-centralized-error-handler"
+    ],
+    "wrapper": [
+      "option-centralized-error-handler",
+      "rule-use-unified-client"
+    ],
+    "option-direct-call": [
+      "option-direct-call"
+    ],
+    "直接原生调用": [
+      "option-direct-call"
+    ],
+    "每个模块直接使用语言或库提供的原生调用能力": [
+      "option-direct-call"
+    ],
+    "不额外建设统一封装层": [
+      "option-direct-call"
+    ],
+    "fetch": [
+      "option-direct-call"
+    ],
+    "axios": [
+      "option-direct-call"
+    ],
+    "requests": [
+      "option-direct-call"
+    ],
+    "option-exponential-backoff": [
+      "option-exponential-backoff"
+    ],
+    "指数退避重试": [
+      "option-exponential-backoff"
+    ],
+    "对满足幂等和暂时性失败前提的操作": [
+      "option-exponential-backoff"
+    ],
+    "采用带上限的指数退避重试": [
+      "option-exponential-backoff"
+    ],
+    "retry": [
+      "option-exponential-backoff",
+      "practice-retry-strategy"
+    ],
+    "timeout": [
+      "option-exponential-backoff",
+      "practice-retry-strategy"
+    ],
+    "jitter": [
+      "option-exponential-backoff"
+    ],
+    "option-inline-config": [
+      "option-inline-config"
+    ],
+    "内联配置": [
+      "option-inline-config"
+    ],
+    "将参数": [
+      "option-inline-config"
+    ],
+    "开关和默认值直接写在业务模块内": [
+      "option-inline-config"
+    ],
+    "不经过统一配置入口": [
+      "option-inline-config"
+    ],
+    "literal": [
+      "option-inline-config"
+    ],
+    "local-const": [
+      "option-inline-config"
+    ],
+    "option-inline-error-handler": [
+      "option-inline-error-handler"
+    ],
+    "内联错误处理": [
+      "option-inline-error-handler"
+    ],
+    "每个模块自行捕获和处理错误": [
+      "option-inline-error-handler"
+    ],
+    "不借助共享错误模型和统一入口": [
+      "option-inline-error-handler"
+    ],
+    "try-catch": [
+      "option-inline-error-handler"
+    ],
+    "local-branch": [
+      "option-inline-error-handler"
+    ],
+    "option-local-status-handling": [
+      "option-local-status-handling"
+    ],
+    "局部状态处理": [
+      "option-local-status-handling"
+    ],
+    "每个模块只管理自身的任务状态": [
+      "option-local-status-handling"
+    ],
+    "不提供统一的共享状态抽象": [
+      "option-local-status-handling"
+    ],
+    "component-state": [
+      "option-local-status-handling"
+    ],
+    "local-var": [
+      "option-local-status-handling"
+    ],
+    "option-no-retry": [
+      "option-no-retry"
+    ],
+    "明确不重试": [
+      "option-no-retry"
+    ],
+    "失败立即返回": [
+      "option-no-retry"
+    ],
+    "不为调用增加自动重试逻辑": [
+      "option-no-retry"
+    ],
+    "fail-fast": [
+      "option-no-retry"
+    ],
+    "option-plain-logging": [
+      "option-plain-logging"
+    ],
+    "纯文本日志": [
+      "option-plain-logging"
+    ],
+    "只输出纯文本消息": [
+      "option-plain-logging"
+    ],
+    "不约束结构化字段和统一事件模型": [
+      "option-plain-logging"
+    ],
+    "console": [
+      "option-plain-logging"
+    ],
+    "stdout": [
+      "option-plain-logging"
+    ],
+    "print": [
+      "option-plain-logging"
+    ],
+    "option-shared-status-layer": [
+      "option-shared-status-layer"
+    ],
+    "共享任务状态层": [
+      "option-shared-status-layer"
+    ],
+    "用共享状态容器": [
+      "option-shared-status-layer"
+    ],
+    "事件总线或统一任务模型表达流程状态": [
+      "option-shared-status-layer"
+    ],
+    "而不是让每个局部自行管理": [
+      "option-shared-status-layer"
+    ],
+    "ui-state": [
+      "option-shared-status-layer"
+    ],
+    "event": [
+      "option-shared-status-layer"
+    ],
+    "option-structured-logging": [
+      "option-structured-logging"
+    ],
+    "结构化日志": [
+      "option-structured-logging"
+    ],
+    "以稳定字段": [
+      "option-structured-logging"
+    ],
+    "上下文和事件名记录日志": [
+      "option-structured-logging"
+    ],
+    "便于检索": [
+      "option-structured-logging"
+    ],
+    "聚合": [
+      "option-structured-logging"
+    ],
+    "审计和告警": [
+      "option-structured-logging"
+    ],
+    "json": [
+      "option-structured-logging"
+    ],
+    "fields": [
+      "option-structured-logging"
+    ],
+    "trace": [
+      "option-structured-logging",
+      "practice-logging"
+    ],
+    "option-unified-client": [
+      "option-unified-client"
+    ],
+    "统一调用封装层": [
+      "option-unified-client"
+    ],
+    "通过统一": [
+      "option-unified-client"
+    ],
+    "client": [
+      "option-unified-client",
+      "practice-http-client",
+      "rule-use-unified-client"
+    ],
+    "或调用包装器承载鉴权": [
+      "option-unified-client"
+    ],
+    "日志": [
+      "option-unified-client",
+      "practice-http-client"
+    ],
+    "错误映射": [
+      "option-unified-client"
+    ],
+    "重试和观测逻辑": [
+      "option-unified-client"
+    ],
+    "typescript": [
+      "option-unified-client",
+      "project-example-enterprise-web"
+    ],
+    "java": [
+      "option-unified-client"
+    ],
+    "python": [
+      "option-unified-client"
+    ],
+    "practice-config-management": [
+      "practice-config-management"
+    ],
+    "配置管理实践": [
+      "practice-config-management"
+    ],
+    "配置应有清晰的集中入口": [
+      "practice-config-management"
+    ],
+    "命名规则和优先级": [
+      "practice-config-management"
+    ],
+    "不应依赖多处内联常量拼接出运行行为": [
+      "practice-config-management"
+    ],
+    "config": [
+      "practice-config-management",
+      "rule-centralized-config-default"
+    ],
+    "environment": [
+      "practice-config-management"
+    ],
+    "secrets": [
+      "practice-config-management"
+    ],
+    "defaults": [
+      "practice-config-management",
+      "rule-centralized-config-default"
+    ],
+    "deployment": [
+      "practice-config-management"
+    ],
+    "practice-error-handling": [
+      "practice-error-handling"
+    ],
+    "错误处理策略实践": [
+      "practice-error-handling"
+    ],
+    "错误处理不应只停留在": [
+      "practice-error-handling"
+    ],
+    "catch": [
+      "practice-error-handling"
+    ],
+    "而应统一定义分类": [
+      "practice-error-handling"
+    ],
+    "映射": [
+      "practice-error-handling"
+    ],
+    "日志和用户反馈方式": [
+      "practice-error-handling"
+    ],
+    "error": [
+      "practice-error-handling"
+    ],
+    "exception": [
+      "practice-error-handling"
+    ],
+    "recovery": [
+      "practice-error-handling"
+    ],
+    "fallback": [
+      "practice-error-handling"
+    ],
+    "practice-http-client": [
+      "practice-http-client"
+    ],
+    "http": [
+      "practice-http-client"
+    ],
+    "调用封装实践": [
+      "practice-http-client"
+    ],
+    "在存在重复鉴权": [
+      "practice-http-client"
+    ],
+    "重试": [
+      "practice-http-client"
+    ],
+    "错误映射或观测要求时": [
+      "practice-http-client"
+    ],
+    "远程调用应优先收敛到统一封装层": [
+      "practice-http-client"
+    ],
+    "request": [
+      "practice-http-client"
+    ],
+    "rest": [
+      "practice-http-client",
+      "project-example-enterprise-web"
+    ],
+    "rpc": [
+      "practice-http-client"
+    ],
+    "practice-logging": [
+      "practice-logging"
+    ],
+    "日志记录策略实践": [
+      "practice-logging"
+    ],
+    "日志应优先服务于排障": [
+      "practice-logging"
+    ],
+    "追踪和审计": [
+      "practice-logging"
+    ],
+    "而不是仅供开发时临时查看": [
+      "practice-logging"
+    ],
+    "logging": [
+      "practice-logging",
+      "rule-structured-log-first"
+    ],
+    "observability": [
+      "practice-logging",
+      "rule-structured-log-first"
+    ],
+    "diagnostics": [
+      "practice-logging"
+    ],
+    "practice-retry-strategy": [
+      "practice-retry-strategy"
+    ],
+    "重试策略实践": [
+      "practice-retry-strategy"
+    ],
+    "重试是一种显式工程策略": [
+      "practice-retry-strategy"
+    ],
+    "而不是失败后随手再试一次": [
+      "practice-retry-strategy"
+    ],
+    "它需要边界": [
+      "practice-retry-strategy"
+    ],
+    "次数": [
+      "practice-retry-strategy"
+    ],
+    "退避和幂等前提": [
+      "practice-retry-strategy"
+    ],
+    "backoff": [
+      "practice-retry-strategy"
+    ],
+    "resilience": [
+      "practice-retry-strategy"
+    ],
+    "network": [
+      "practice-retry-strategy"
+    ],
+    "practice-task-status-feedback": [
+      "practice-task-status-feedback"
+    ],
+    "任务状态反馈实践": [
+      "practice-task-status-feedback"
+    ],
+    "对用户可见或跨步骤的任务执行": [
+      "practice-task-status-feedback"
+    ],
+    "应统一表达开始": [
+      "practice-task-status-feedback"
+    ],
+    "进行中": [
+      "practice-task-status-feedback"
+    ],
+    "成功": [
+      "practice-task-status-feedback"
+    ],
+    "失败和可重试状态": [
+      "practice-task-status-feedback"
+    ],
+    "loading": [
+      "practice-task-status-feedback",
+      "rule-shared-status-first"
+    ],
+    "progress": [
+      "practice-task-status-feedback",
+      "rule-shared-status-first"
+    ],
+    "status": [
+      "practice-task-status-feedback",
+      "rule-shared-status-first"
+    ],
+    "feedback": [
+      "practice-task-status-feedback"
+    ],
+    "ui": [
+      "practice-task-status-feedback"
+    ],
+    "async": [
+      "practice-task-status-feedback"
+    ],
+    "project-example-enterprise-web": [
+      "project-example-enterprise-web"
+    ],
+    "示例企业": [
+      "project-example-enterprise-web"
+    ],
+    "web": [
+      "project-example-enterprise-web"
+    ],
+    "项目": [
+      "project-example-enterprise-web"
+    ],
+    "用于演示典型企业": [
+      "project-example-enterprise-web"
+    ],
+    "项目如何在通用知识上叠加自己的治理偏好": [
+      "project-example-enterprise-web"
+    ],
+    "而不污染核心知识模型": [
+      "project-example-enterprise-web"
+    ],
+    "enterprise": [
+      "project-example-enterprise-web"
+    ],
+    "vue": [
+      "project-example-enterprise-web"
+    ],
+    "node": [
+      "project-example-enterprise-web"
+    ],
+    "project-global": [
+      "project-global"
+    ],
+    "全局基线视角": [
+      "project-global"
+    ],
+    "表示跨项目复用时的默认基线视角": [
+      "project-global"
+    ],
+    "不附加任何项目特定加减分": [
+      "project-global"
+    ],
+    "global": [
+      "project-global"
+    ],
+    "baseline": [
+      "project-global"
+    ],
+    "rule-centralized-config-default": [
+      "rule-centralized-config-default"
+    ],
+    "默认集中配置管理": [
+      "rule-centralized-config-default"
+    ],
+    "配置默认收敛到清晰的集中入口": [
+      "rule-centralized-config-default"
+    ],
+    "避免各模块内联散落并形成隐式耦合": [
+      "rule-centralized-config-default"
+    ],
+    "rule-shared-status-first": [
+      "rule-shared-status-first"
+    ],
+    "优先共享任务状态通道": [
+      "rule-shared-status-first"
+    ],
+    "当一个流程涉及多步骤": [
+      "rule-shared-status-first"
+    ],
+    "跨页面或跨模块反馈时": [
+      "rule-shared-status-first"
+    ],
+    "优先使用共享任务状态通道而不是零散局部状态": [
+      "rule-shared-status-first"
+    ],
+    "ux": [
+      "rule-shared-status-first"
+    ],
+    "rule-structured-log-first": [
+      "rule-structured-log-first"
+    ],
+    "优先结构化日志": [
+      "rule-structured-log-first"
+    ],
+    "日志默认采用结构化字段表达关键上下文": [
+      "rule-structured-log-first"
+    ],
+    "避免只输出难以聚合的自由文本": [
+      "rule-structured-log-first"
+    ],
+    "rule-use-unified-client": [
+      "rule-use-unified-client"
+    ],
+    "优先走统一调用封装层": [
+      "rule-use-unified-client"
+    ],
+    "当一个项目存在跨模块": [
+      "rule-use-unified-client"
+    ],
+    "跨服务或跨环境的远程调用时": [
+      "rule-use-unified-client"
+    ],
+    "默认优先收敛到统一封装层": [
+      "rule-use-unified-client"
+    ]
+  }
+}

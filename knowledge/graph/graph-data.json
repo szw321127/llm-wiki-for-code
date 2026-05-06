@@ -1,0 +1,2143 @@
+{
+  "generated_at": "2026-04-30T09:09:14.981Z",
+  "knowledge_root": ".",
+  "project_views": [
+    {
+      "id": "global",
+      "title": "全局视角",
+      "synthetic": true
+    },
+    {
+      "id": "project-example-enterprise-web",
+      "title": "示例企业 Web 项目",
+      "synthetic": false
+    },
+    {
+      "id": "project-global",
+      "title": "全局基线视角",
+      "synthetic": false
+    }
+  ],
+  "stats": {
+    "total_nodes": 32,
+    "total_edges": 89,
+    "counts_by_type": {
+      "constraint": 4,
+      "context": 4,
+      "option": 12,
+      "practice": 6,
+      "project_profile": 2,
+      "rule": 4
+    }
+  },
+  "nodes": [
+    {
+      "id": "constraint-auditability",
+      "label": "必须可审计",
+      "type": "constraint",
+      "title": "必须可审计",
+      "summary": "要求关键行为、异常和配置变更可以被追踪、复盘和解释。",
+      "body": "## Summary\n\n要求关键行为、异常和配置变更可以被追踪、复盘和解释。",
+      "source_path": "constraints/constraint-auditability.md",
+      "status": "active",
+      "keywords": [
+        "audit",
+        "compliance",
+        "traceability"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "constraint",
+      "neighbor_ids": [
+        "option-centralized-config",
+        "option-centralized-error-handler",
+        "option-structured-logging",
+        "practice-config-management",
+        "practice-error-handling",
+        "practice-http-client",
+        "practice-logging"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "constraint-backward-compatibility",
+      "label": "必须兼容既有接口",
+      "type": "constraint",
+      "title": "必须兼容既有接口",
+      "summary": "要求新方案不能轻易破坏旧调用方式、旧配置或已有集成链路。",
+      "body": "## Summary\n\n要求新方案不能轻易破坏旧调用方式、旧配置或已有集成链路。",
+      "source_path": "constraints/constraint-backward-compatibility.md",
+      "status": "active",
+      "keywords": [
+        "compatibility",
+        "migration",
+        "legacy"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "constraint",
+      "neighbor_ids": [
+        "option-exponential-backoff",
+        "option-unified-client",
+        "practice-http-client",
+        "practice-retry-strategy"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "constraint-low-operational-complexity",
+      "label": "运维复杂度必须可控",
+      "type": "constraint",
+      "title": "运维复杂度必须可控",
+      "summary": "要求方案在上线、排障、培训和长期维护上的附加复杂度保持可控。",
+      "body": "## Summary\n\n要求方案在上线、排障、培训和长期维护上的附加复杂度保持可控。",
+      "source_path": "constraints/constraint-low-operational-complexity.md",
+      "status": "active",
+      "keywords": [
+        "operations",
+        "complexity",
+        "support"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "constraint",
+      "neighbor_ids": [
+        "option-exponential-backoff",
+        "option-shared-status-layer",
+        "option-structured-logging",
+        "practice-error-handling",
+        "practice-logging",
+        "practice-retry-strategy",
+        "practice-task-status-feedback"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "constraint-no-extra-runtime",
+      "label": "不能引入额外运行时",
+      "type": "constraint",
+      "title": "不能引入额外运行时",
+      "summary": "要求方案尽量依赖已有语言和平台能力，避免引入新的服务或守护进程。",
+      "body": "## Summary\n\n要求方案尽量依赖已有语言和平台能力，避免引入新的服务或守护进程。",
+      "source_path": "constraints/constraint-no-extra-runtime.md",
+      "status": "active",
+      "keywords": [
+        "runtime",
+        "dependency",
+        "portability"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "constraint",
+      "neighbor_ids": [
+        "option-centralized-config",
+        "option-unified-client",
+        "practice-config-management",
+        "practice-http-client",
+        "practice-task-status-feedback"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "context-automation-script",
+      "label": "自动化脚本与批处理任务",
+      "type": "context",
+      "title": "自动化脚本与批处理任务",
+      "summary": "面向命令行脚本、定时任务、数据处理和自动化巡检等非交互式执行场景。",
+      "body": "## Summary\n\n面向命令行脚本、定时任务、数据处理和自动化巡检等非交互式执行场景。",
+      "source_path": "contexts/context-automation-script.md",
+      "status": "active",
+      "keywords": [
+        "script",
+        "automation",
+        "batch",
+        "cron"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "context",
+      "neighbor_ids": [
+        "practice-config-management",
+        "practice-error-handling",
+        "practice-http-client",
+        "practice-logging",
+        "practice-retry-strategy"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "context-backend-api",
+      "label": "后端 API 与服务编排",
+      "type": "context",
+      "title": "后端 API 与服务编排",
+      "summary": "面向 API 暴露、服务聚合、外部系统调用和稳定性治理的后端服务场景。",
+      "body": "## Summary\n\n面向 API 暴露、服务聚合、外部系统调用和稳定性治理的后端服务场景。",
+      "source_path": "contexts/context-backend-api.md",
+      "status": "active",
+      "keywords": [
+        "backend",
+        "api",
+        "service",
+        "integration"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "context",
+      "neighbor_ids": [
+        "practice-config-management",
+        "practice-error-handling",
+        "practice-http-client",
+        "practice-logging",
+        "practice-retry-strategy",
+        "practice-task-status-feedback"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "context-engineering-workflow",
+      "label": "工程流程与发布治理",
+      "type": "context",
+      "title": "工程流程与发布治理",
+      "summary": "面向构建、发布、流水线、质量门禁和团队协作规范的工程流程场景。",
+      "body": "## Summary\n\n面向构建、发布、流水线、质量门禁和团队协作规范的工程流程场景。",
+      "source_path": "contexts/context-engineering-workflow.md",
+      "status": "active",
+      "keywords": [
+        "workflow",
+        "release",
+        "ci",
+        "governance"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "context",
+      "neighbor_ids": [
+        "practice-config-management",
+        "practice-error-handling",
+        "practice-logging",
+        "practice-retry-strategy",
+        "practice-task-status-feedback"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "context-frontend-crud",
+      "label": "前端 CRUD 与交互页面",
+      "type": "context",
+      "title": "前端 CRUD 与交互页面",
+      "summary": "面向列表、表单、详情、查询和交互反馈较多的前端页面场景。",
+      "body": "## Summary\n\n面向列表、表单、详情、查询和交互反馈较多的前端页面场景。",
+      "source_path": "contexts/context-frontend-crud.md",
+      "status": "active",
+      "keywords": [
+        "frontend",
+        "crud",
+        "form",
+        "table"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "context",
+      "neighbor_ids": [
+        "practice-config-management",
+        "practice-error-handling",
+        "practice-http-client",
+        "practice-logging",
+        "practice-task-status-feedback"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "option-centralized-config",
+      "label": "集中配置入口",
+      "type": "option",
+      "title": "集中配置入口",
+      "summary": "通过统一配置模块、配置文件或环境变量入口管理默认值和覆盖顺序。",
+      "body": "## Summary\n\n通过统一配置模块、配置文件或环境变量入口管理默认值和覆盖顺序。\n\n## Advantages\n\n- 配置来源清晰\n- 更容易做审计和环境对比\n\n## Risks\n\n- 需要约定命名、优先级和校验策略\n\n## When To Use\n\n- 项目存在多环境或多部署目标\n- 需要复用配置和默认值\n\n## Notes\n\n- 应避免把业务分支逻辑隐式藏在配置解析中",
+      "source_path": "options/option-centralized-config.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "env",
+        "config-file",
+        "schema"
+      ],
+      "contexts": [],
+      "constraints": [
+        "constraint-auditability",
+        "constraint-no-extra-runtime"
+      ],
+      "rules": [],
+      "alternatives": [
+        "option-inline-config"
+      ],
+      "practice": "practice-config-management",
+      "base_score": 88,
+      "score_breakdown": {
+        "consistency": 19,
+        "efficiency": 16,
+        "maintainability": 19,
+        "extensibility": 18,
+        "risk": 16
+      },
+      "recommended": true,
+      "node_group": "option-recommended",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "constraint-no-extra-runtime",
+        "option-inline-config",
+        "practice-config-management",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": 9,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 88,
+        "project-example-enterprise-web": 97,
+        "project-global": 88
+      }
+    },
+    {
+      "id": "option-centralized-error-handler",
+      "label": "集中式错误处理入口",
+      "type": "option",
+      "title": "集中式错误处理入口",
+      "summary": "通过统一错误入口完成分类、日志记录、错误映射和对外反馈。",
+      "body": "## Summary\n\n通过统一错误入口完成分类、日志记录、错误映射和对外反馈。\n\n## Advantages\n\n- 同类错误处理方式一致\n- 方便接入日志、告警和降级策略\n\n## Risks\n\n- 需要约定错误模型和边界\n\n## When To Use\n\n- 需要跨模块统一错误语义\n- 需要稳定审计和复盘链路\n\n## Notes\n\n- 与统一调用封装层、结构化日志配合效果最好",
+      "source_path": "options/option-centralized-error-handler.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "middleware",
+        "interceptor",
+        "wrapper"
+      ],
+      "contexts": [],
+      "constraints": [
+        "constraint-auditability"
+      ],
+      "rules": [],
+      "alternatives": [
+        "option-inline-error-handler"
+      ],
+      "practice": "practice-error-handling",
+      "base_score": 87,
+      "score_breakdown": {
+        "consistency": 19,
+        "efficiency": 16,
+        "maintainability": 18,
+        "extensibility": 17,
+        "risk": 17
+      },
+      "recommended": true,
+      "node_group": "option-recommended",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "option-inline-error-handler",
+        "practice-error-handling",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": 10,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 87,
+        "project-example-enterprise-web": 97,
+        "project-global": 87
+      }
+    },
+    {
+      "id": "option-direct-call",
+      "label": "直接原生调用",
+      "type": "option",
+      "title": "直接原生调用",
+      "summary": "每个模块直接使用语言或库提供的原生调用能力，不额外建设统一封装层。",
+      "body": "## Summary\n\n每个模块直接使用语言或库提供的原生调用能力，不额外建设统一封装层。\n\n## Advantages\n\n- 启动快\n- 局部实验成本低\n\n## Risks\n\n- 易导致鉴权、日志和错误处理分叉\n- 后续统一治理成本高\n\n## When To Use\n\n- 一次性脚本\n- 生命周期极短且调用面极小的场景\n\n## Notes\n\n- 不适合作为长期默认方案",
+      "source_path": "options/option-direct-call.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "fetch",
+        "axios",
+        "requests"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [
+        "option-unified-client"
+      ],
+      "practice": "practice-http-client",
+      "base_score": 68,
+      "score_breakdown": {
+        "consistency": 11,
+        "efficiency": 18,
+        "maintainability": 12,
+        "extensibility": 10,
+        "risk": 17
+      },
+      "recommended": false,
+      "node_group": "option-secondary",
+      "neighbor_ids": [
+        "option-unified-client",
+        "practice-http-client",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": -12,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 68,
+        "project-example-enterprise-web": 56,
+        "project-global": 68
+      }
+    },
+    {
+      "id": "option-exponential-backoff",
+      "label": "指数退避重试",
+      "type": "option",
+      "title": "指数退避重试",
+      "summary": "对满足幂等和暂时性失败前提的操作，采用带上限的指数退避重试。",
+      "body": "## Summary\n\n对满足幂等和暂时性失败前提的操作，采用带上限的指数退避重试。\n\n## Advantages\n\n- 能提升短暂故障下的成功率\n- 可通过参数控制资源放大风险\n\n## Risks\n\n- 需要明确哪些错误和操作允许重试\n- 需要避免对非幂等操作滥用\n\n## When To Use\n\n- 外部依赖偶发抖动\n- 自动化任务可接受有限重试\n\n## Notes\n\n- 建议同时记录重试次数和最终失败原因",
+      "source_path": "options/option-exponential-backoff.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "retry",
+        "timeout",
+        "jitter"
+      ],
+      "contexts": [],
+      "constraints": [
+        "constraint-backward-compatibility",
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [],
+      "alternatives": [
+        "option-no-retry"
+      ],
+      "practice": "practice-retry-strategy",
+      "base_score": 84,
+      "score_breakdown": {
+        "consistency": 17,
+        "efficiency": 15,
+        "maintainability": 17,
+        "extensibility": 17,
+        "risk": 18
+      },
+      "recommended": true,
+      "node_group": "option-recommended",
+      "neighbor_ids": [
+        "constraint-backward-compatibility",
+        "constraint-low-operational-complexity",
+        "option-no-retry",
+        "practice-retry-strategy",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": 4,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 84,
+        "project-example-enterprise-web": 88,
+        "project-global": 84
+      }
+    },
+    {
+      "id": "option-inline-config",
+      "label": "内联配置",
+      "type": "option",
+      "title": "内联配置",
+      "summary": "将参数、开关和默认值直接写在业务模块内，不经过统一配置入口。",
+      "body": "## Summary\n\n将参数、开关和默认值直接写在业务模块内，不经过统一配置入口。\n\n## Advantages\n\n- 改动快\n- 很小的脚本可以少写一层封装\n\n## Risks\n\n- 配置来源不透明\n- 环境差异和默认值容易失控\n\n## When To Use\n\n- 一次性脚本或非常短生命周期的实验代码\n\n## Notes\n\n- 随着模块增多，通常需要迁移到集中配置入口",
+      "source_path": "options/option-inline-config.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "literal",
+        "local-const"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [
+        "option-centralized-config"
+      ],
+      "practice": "practice-config-management",
+      "base_score": 64,
+      "score_breakdown": {
+        "consistency": 10,
+        "efficiency": 19,
+        "maintainability": 12,
+        "extensibility": 9,
+        "risk": 14
+      },
+      "recommended": false,
+      "node_group": "option-secondary",
+      "neighbor_ids": [
+        "option-centralized-config",
+        "practice-config-management",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": -10,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 64,
+        "project-example-enterprise-web": 54,
+        "project-global": 64
+      }
+    },
+    {
+      "id": "option-inline-error-handler",
+      "label": "内联错误处理",
+      "type": "option",
+      "title": "内联错误处理",
+      "summary": "每个模块自行捕获和处理错误，不借助共享错误模型和统一入口。",
+      "body": "## Summary\n\n每个模块自行捕获和处理错误，不借助共享错误模型和统一入口。\n\n## Advantages\n\n- 改造门槛低\n- 局部逻辑上手快\n\n## Risks\n\n- 很容易出现同类错误不同处理方式\n- 日志、告警和文案难以统一\n\n## When To Use\n\n- 原型验证或非常局部的一次性流程\n\n## Notes\n\n- 不建议作为默认长期方案",
+      "source_path": "options/option-inline-error-handler.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "try-catch",
+        "local-branch"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [
+        "option-centralized-error-handler"
+      ],
+      "practice": "practice-error-handling",
+      "base_score": 70,
+      "score_breakdown": {
+        "consistency": 12,
+        "efficiency": 18,
+        "maintainability": 14,
+        "extensibility": 11,
+        "risk": 15
+      },
+      "recommended": false,
+      "node_group": "option-secondary",
+      "neighbor_ids": [
+        "option-centralized-error-handler",
+        "practice-error-handling",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": -6,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 70,
+        "project-example-enterprise-web": 64,
+        "project-global": 70
+      }
+    },
+    {
+      "id": "option-local-status-handling",
+      "label": "局部状态处理",
+      "type": "option",
+      "title": "局部状态处理",
+      "summary": "每个模块只管理自身的任务状态，不提供统一的共享状态抽象。",
+      "body": "## Summary\n\n每个模块只管理自身的任务状态，不提供统一的共享状态抽象。\n\n## Advantages\n\n- 落地简单\n- 小范围流程开发速度快\n\n## Risks\n\n- 复杂流程会出现反馈不一致和重复逻辑\n\n## When To Use\n\n- 单页面、单步骤、无跨模块协同的任务\n\n## Notes\n\n- 随着流程增长通常需要向共享状态层迁移",
+      "source_path": "options/option-local-status-handling.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "component-state",
+        "local-var"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [
+        "option-shared-status-layer"
+      ],
+      "practice": "practice-task-status-feedback",
+      "base_score": 72,
+      "score_breakdown": {
+        "consistency": 12,
+        "efficiency": 18,
+        "maintainability": 14,
+        "extensibility": 12,
+        "risk": 16
+      },
+      "recommended": false,
+      "node_group": "option-secondary",
+      "neighbor_ids": [
+        "option-shared-status-layer",
+        "practice-task-status-feedback",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": -8,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 72,
+        "project-example-enterprise-web": 64,
+        "project-global": 72
+      }
+    },
+    {
+      "id": "option-no-retry",
+      "label": "明确不重试",
+      "type": "option",
+      "title": "明确不重试",
+      "summary": "失败立即返回，不为调用增加自动重试逻辑。",
+      "body": "## Summary\n\n失败立即返回，不为调用增加自动重试逻辑。\n\n## Advantages\n\n- 实现最简单\n- 行为边界清晰\n\n## Risks\n\n- 对瞬时失败容忍度低\n- 用户体验和成功率可能更差\n\n## When To Use\n\n- 非幂等操作\n- 失败成本高于偶发成功率损失\n\n## Notes\n\n- 适合明确禁止重试的敏感流程",
+      "source_path": "options/option-no-retry.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "fail-fast"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [
+        "option-exponential-backoff"
+      ],
+      "practice": "practice-retry-strategy",
+      "base_score": 66,
+      "score_breakdown": {
+        "consistency": 11,
+        "efficiency": 20,
+        "maintainability": 12,
+        "extensibility": 7,
+        "risk": 16
+      },
+      "recommended": false,
+      "node_group": "option-secondary",
+      "neighbor_ids": [
+        "option-exponential-backoff",
+        "practice-retry-strategy",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": -6,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 66,
+        "project-example-enterprise-web": 60,
+        "project-global": 66
+      }
+    },
+    {
+      "id": "option-plain-logging",
+      "label": "纯文本日志",
+      "type": "option",
+      "title": "纯文本日志",
+      "summary": "只输出纯文本消息，不约束结构化字段和统一事件模型。",
+      "body": "## Summary\n\n只输出纯文本消息，不约束结构化字段和统一事件模型。\n\n## Advantages\n\n- 上手快\n- 一次性脚本可直接使用\n\n## Risks\n\n- 聚合、检索和告警能力较弱\n- 长期维护时缺乏稳定上下文\n\n## When To Use\n\n- 很短生命周期的本地调试\n\n## Notes\n\n- 适合作为临时补充，不适合作为默认策略",
+      "source_path": "options/option-plain-logging.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "console",
+        "stdout",
+        "print"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [
+        "option-structured-logging"
+      ],
+      "practice": "practice-logging",
+      "base_score": 62,
+      "score_breakdown": {
+        "consistency": 10,
+        "efficiency": 18,
+        "maintainability": 11,
+        "extensibility": 8,
+        "risk": 15
+      },
+      "recommended": false,
+      "node_group": "option-secondary",
+      "neighbor_ids": [
+        "option-structured-logging",
+        "practice-logging",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": -10,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 62,
+        "project-example-enterprise-web": 52,
+        "project-global": 62
+      }
+    },
+    {
+      "id": "option-shared-status-layer",
+      "label": "共享任务状态层",
+      "type": "option",
+      "title": "共享任务状态层",
+      "summary": "用共享状态容器、事件总线或统一任务模型表达流程状态，而不是让每个局部自行管理。",
+      "body": "## Summary\n\n用共享状态容器、事件总线或统一任务模型表达流程状态，而不是让每个局部自行管理。\n\n## Advantages\n\n- 跨页面、跨步骤状态一致\n- 容易统一 loading、progress、success、error 表达\n\n## Risks\n\n- 命名和边界设计需要提前约束\n\n## When To Use\n\n- 一个任务会影响多个模块\n- 需要统一反馈复杂流程状态\n\n## Notes\n\n- 对企业 Web 和流程型系统尤其有效",
+      "source_path": "options/option-shared-status-layer.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "ui-state",
+        "event",
+        "workflow"
+      ],
+      "contexts": [],
+      "constraints": [
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [],
+      "alternatives": [
+        "option-local-status-handling"
+      ],
+      "practice": "practice-task-status-feedback",
+      "base_score": 86,
+      "score_breakdown": {
+        "consistency": 18,
+        "efficiency": 16,
+        "maintainability": 18,
+        "extensibility": 17,
+        "risk": 17
+      },
+      "recommended": true,
+      "node_group": "option-recommended",
+      "neighbor_ids": [
+        "constraint-low-operational-complexity",
+        "option-local-status-handling",
+        "practice-task-status-feedback",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": 8,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 86,
+        "project-example-enterprise-web": 94,
+        "project-global": 86
+      }
+    },
+    {
+      "id": "option-structured-logging",
+      "label": "结构化日志",
+      "type": "option",
+      "title": "结构化日志",
+      "summary": "以稳定字段、上下文和事件名记录日志，便于检索、聚合、审计和告警。",
+      "body": "## Summary\n\n以稳定字段、上下文和事件名记录日志，便于检索、聚合、审计和告警。\n\n## Advantages\n\n- 易于机器处理和统计\n- 更适合跨团队、跨环境排障\n\n## Risks\n\n- 需要建立字段命名规范\n\n## When To Use\n\n- 需要审计、检索和趋势分析\n- 需要统一观察多个系统\n\n## Notes\n\n- 日志字段模型应与错误模型和任务状态模型联动",
+      "source_path": "options/option-structured-logging.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "json",
+        "fields",
+        "trace"
+      ],
+      "contexts": [],
+      "constraints": [
+        "constraint-auditability",
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [],
+      "alternatives": [
+        "option-plain-logging"
+      ],
+      "practice": "practice-logging",
+      "base_score": 90,
+      "score_breakdown": {
+        "consistency": 20,
+        "efficiency": 15,
+        "maintainability": 19,
+        "extensibility": 18,
+        "risk": 18
+      },
+      "recommended": true,
+      "node_group": "option-recommended",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "constraint-low-operational-complexity",
+        "option-plain-logging",
+        "practice-logging",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": 12,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 90,
+        "project-example-enterprise-web": 102,
+        "project-global": 90
+      }
+    },
+    {
+      "id": "option-unified-client",
+      "label": "统一调用封装层",
+      "type": "option",
+      "title": "统一调用封装层",
+      "summary": "通过统一 API Client 或调用包装器承载鉴权、日志、错误映射、重试和观测逻辑。",
+      "body": "## Summary\n\n通过统一 API Client 或调用包装器承载鉴权、日志、错误映射、重试和观测逻辑。\n\n## Advantages\n\n- 一致性和治理能力强\n- 便于集中扩展横切能力\n\n## Risks\n\n- 需要定义清晰的封装边界\n- 初期需要整理既有调用方式\n\n## When To Use\n\n- 调用点数量会持续增加\n- 需要统一治理跨模块请求行为\n\n## Notes\n\n- 适合作为长期默认方案",
+      "source_path": "options/option-unified-client.md",
+      "status": "active",
+      "keywords": [],
+      "tech": [
+        "typescript",
+        "java",
+        "python"
+      ],
+      "contexts": [],
+      "constraints": [
+        "constraint-backward-compatibility",
+        "constraint-no-extra-runtime"
+      ],
+      "rules": [],
+      "alternatives": [
+        "option-direct-call"
+      ],
+      "practice": "practice-http-client",
+      "base_score": 89,
+      "score_breakdown": {
+        "consistency": 20,
+        "efficiency": 17,
+        "maintainability": 19,
+        "extensibility": 17,
+        "risk": 16
+      },
+      "recommended": true,
+      "node_group": "option-recommended",
+      "neighbor_ids": [
+        "constraint-backward-compatibility",
+        "constraint-no-extra-runtime",
+        "option-direct-call",
+        "practice-http-client",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "project_adjustments": {
+        "global": 0,
+        "project-example-enterprise-web": 10,
+        "project-global": 0
+      },
+      "final_scores": {
+        "global": 89,
+        "project-example-enterprise-web": 99,
+        "project-global": 89
+      }
+    },
+    {
+      "id": "practice-config-management",
+      "label": "配置管理实践",
+      "type": "practice",
+      "title": "配置管理实践",
+      "summary": "配置应有清晰的集中入口、命名规则和优先级，不应依赖多处内联常量拼接出运行行为。",
+      "body": "## Summary\n\n配置应有清晰的集中入口、命名规则和优先级，不应依赖多处内联常量拼接出运行行为。\n\n## Decision\n\n默认推荐集中配置管理；只在真正一次性、无复用的局部逻辑中接受内联配置。\n\n## When To Use\n\n- 项目存在多环境、多部署目标\n- 脚本需要复用参数和默认值\n- 工程流程需要追踪配置来源\n\n## Tradeoffs\n\n- 集中配置更利于治理和审计，但需要统一约定命名和覆盖顺序\n- 内联配置改动快，但容易让真实运行参数失去可见性\n\n## Evidence\n\n- 随着环境和模块增多，配置入口不集中通常会成为稳定性和审计的隐患",
+      "source_path": "practices/practice-config-management.md",
+      "status": "active",
+      "keywords": [
+        "config",
+        "environment",
+        "secrets",
+        "defaults"
+      ],
+      "tech": [
+        "config",
+        "environment",
+        "deployment"
+      ],
+      "contexts": [
+        "context-frontend-crud",
+        "context-backend-api",
+        "context-automation-script",
+        "context-engineering-workflow"
+      ],
+      "constraints": [
+        "constraint-auditability",
+        "constraint-no-extra-runtime"
+      ],
+      "rules": [
+        "rule-centralized-config-default"
+      ],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "practice",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "constraint-no-extra-runtime",
+        "context-automation-script",
+        "context-backend-api",
+        "context-engineering-workflow",
+        "context-frontend-crud",
+        "option-centralized-config",
+        "option-inline-config",
+        "rule-centralized-config-default"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "option_ids": [
+        "option-centralized-config",
+        "option-inline-config"
+      ],
+      "ranked_option_ids": {
+        "global": [
+          "option-centralized-config",
+          "option-inline-config"
+        ],
+        "project-example-enterprise-web": [
+          "option-centralized-config",
+          "option-inline-config"
+        ],
+        "project-global": [
+          "option-centralized-config",
+          "option-inline-config"
+        ]
+      },
+      "recommended_options": {
+        "global": "option-centralized-config",
+        "project-example-enterprise-web": "option-centralized-config",
+        "project-global": "option-centralized-config"
+      }
+    },
+    {
+      "id": "practice-error-handling",
+      "label": "错误处理策略实践",
+      "type": "practice",
+      "title": "错误处理策略实践",
+      "summary": "错误处理不应只停留在 `catch`，而应统一定义分类、映射、日志和用户反馈方式。",
+      "body": "## Summary\n\n错误处理不应只停留在 `catch`，而应统一定义分类、映射、日志和用户反馈方式。\n\n## Decision\n\n默认推荐集中式错误处理入口，统一完成分类、记录、转换与反馈；仅在非常局部的场景使用内联处理。\n\n## When To Use\n\n- 需要区分业务错误、系统错误和可恢复错误\n- 需要统一对外文案和告警行为\n- 需要让脚本和工程流程在失败时保持可解释\n\n## Tradeoffs\n\n- 集中式入口更利于治理和复盘，但需要建立错误模型\n- 内联处理更快开始，却容易造成同类错误被不同方式处理\n\n## Evidence\n\n- 可审计项目里，错误分类和日志上下文不统一通常会直接抬高排障成本",
+      "source_path": "practices/practice-error-handling.md",
+      "status": "active",
+      "keywords": [
+        "error",
+        "exception",
+        "recovery",
+        "fallback"
+      ],
+      "tech": [
+        "error",
+        "exception",
+        "recovery"
+      ],
+      "contexts": [
+        "context-frontend-crud",
+        "context-backend-api",
+        "context-automation-script",
+        "context-engineering-workflow"
+      ],
+      "constraints": [
+        "constraint-auditability",
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [
+        "rule-structured-log-first"
+      ],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "practice",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "constraint-low-operational-complexity",
+        "context-automation-script",
+        "context-backend-api",
+        "context-engineering-workflow",
+        "context-frontend-crud",
+        "option-centralized-error-handler",
+        "option-inline-error-handler",
+        "rule-structured-log-first"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "option_ids": [
+        "option-centralized-error-handler",
+        "option-inline-error-handler"
+      ],
+      "ranked_option_ids": {
+        "global": [
+          "option-centralized-error-handler",
+          "option-inline-error-handler"
+        ],
+        "project-example-enterprise-web": [
+          "option-centralized-error-handler",
+          "option-inline-error-handler"
+        ],
+        "project-global": [
+          "option-centralized-error-handler",
+          "option-inline-error-handler"
+        ]
+      },
+      "recommended_options": {
+        "global": "option-centralized-error-handler",
+        "project-example-enterprise-web": "option-centralized-error-handler",
+        "project-global": "option-centralized-error-handler"
+      }
+    },
+    {
+      "id": "practice-http-client",
+      "label": "HTTP 调用封装实践",
+      "type": "practice",
+      "title": "HTTP 调用封装实践",
+      "summary": "在存在重复鉴权、重试、日志、错误映射或观测要求时，远程调用应优先收敛到统一封装层。",
+      "body": "## Summary\n\n在存在重复鉴权、重试、日志、错误映射或观测要求时，远程调用应优先收敛到统一封装层。\n\n## Decision\n\n默认推荐统一调用封装；只有在生命周期极短、调用点极少且无需治理时才考虑直接调用。\n\n## When To Use\n\n- 前端页面需要稳定复用请求行为\n- 后端服务需要对外部调用做统一治理\n- 自动化脚本需要共享鉴权和错误处理逻辑\n\n## Tradeoffs\n\n- 统一封装提升一致性和维护性，但需要预先设计调用边界\n- 直接调用启动成本低，但长期容易散落和分叉\n\n## Evidence\n\n- 多项目经验表明，请求封装是日志、错误和重试策略复用的最佳落点之一",
+      "source_path": "practices/practice-http-client.md",
+      "status": "active",
+      "keywords": [
+        "api",
+        "client",
+        "request",
+        "http"
+      ],
+      "tech": [
+        "http",
+        "rest",
+        "rpc"
+      ],
+      "contexts": [
+        "context-frontend-crud",
+        "context-backend-api",
+        "context-automation-script"
+      ],
+      "constraints": [
+        "constraint-auditability",
+        "constraint-backward-compatibility",
+        "constraint-no-extra-runtime"
+      ],
+      "rules": [
+        "rule-use-unified-client"
+      ],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "practice",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "constraint-backward-compatibility",
+        "constraint-no-extra-runtime",
+        "context-automation-script",
+        "context-backend-api",
+        "context-frontend-crud",
+        "option-direct-call",
+        "option-unified-client",
+        "rule-use-unified-client"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "option_ids": [
+        "option-direct-call",
+        "option-unified-client"
+      ],
+      "ranked_option_ids": {
+        "global": [
+          "option-unified-client",
+          "option-direct-call"
+        ],
+        "project-example-enterprise-web": [
+          "option-unified-client",
+          "option-direct-call"
+        ],
+        "project-global": [
+          "option-unified-client",
+          "option-direct-call"
+        ]
+      },
+      "recommended_options": {
+        "global": "option-unified-client",
+        "project-example-enterprise-web": "option-unified-client",
+        "project-global": "option-unified-client"
+      }
+    },
+    {
+      "id": "practice-logging",
+      "label": "日志记录策略实践",
+      "type": "practice",
+      "title": "日志记录策略实践",
+      "summary": "日志应优先服务于排障、追踪和审计，而不是仅供开发时临时查看。",
+      "body": "## Summary\n\n日志应优先服务于排障、追踪和审计，而不是仅供开发时临时查看。\n\n## Decision\n\n默认推荐结构化日志，保留稳定字段和上下文；纯文本日志只适合作为非常短生命周期的补充。\n\n## When To Use\n\n- 需要跨服务检索和聚合日志\n- 需要脚本执行记录可以被审计\n- 需要工程流程输出可用于回放和统计\n\n## Tradeoffs\n\n- 结构化日志前期需要定义字段规范\n- 纯文本日志上手快，但后续很难稳定聚合和告警\n\n## Evidence\n\n- 一致的字段模型是跨环境定位问题和沉淀运营指标的基础",
+      "source_path": "practices/practice-logging.md",
+      "status": "active",
+      "keywords": [
+        "logging",
+        "trace",
+        "observability",
+        "diagnostics"
+      ],
+      "tech": [
+        "logging",
+        "observability",
+        "diagnostics"
+      ],
+      "contexts": [
+        "context-frontend-crud",
+        "context-backend-api",
+        "context-automation-script",
+        "context-engineering-workflow"
+      ],
+      "constraints": [
+        "constraint-auditability",
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [
+        "rule-structured-log-first"
+      ],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "practice",
+      "neighbor_ids": [
+        "constraint-auditability",
+        "constraint-low-operational-complexity",
+        "context-automation-script",
+        "context-backend-api",
+        "context-engineering-workflow",
+        "context-frontend-crud",
+        "option-plain-logging",
+        "option-structured-logging",
+        "rule-structured-log-first"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "option_ids": [
+        "option-plain-logging",
+        "option-structured-logging"
+      ],
+      "ranked_option_ids": {
+        "global": [
+          "option-structured-logging",
+          "option-plain-logging"
+        ],
+        "project-example-enterprise-web": [
+          "option-structured-logging",
+          "option-plain-logging"
+        ],
+        "project-global": [
+          "option-structured-logging",
+          "option-plain-logging"
+        ]
+      },
+      "recommended_options": {
+        "global": "option-structured-logging",
+        "project-example-enterprise-web": "option-structured-logging",
+        "project-global": "option-structured-logging"
+      }
+    },
+    {
+      "id": "practice-retry-strategy",
+      "label": "重试策略实践",
+      "type": "practice",
+      "title": "重试策略实践",
+      "summary": "重试是一种显式工程策略，而不是失败后随手再试一次；它需要边界、次数、退避和幂等前提。",
+      "body": "## Summary\n\n重试是一种显式工程策略，而不是失败后随手再试一次；它需要边界、次数、退避和幂等前提。\n\n## Decision\n\n默认推荐指数退避重试，只对短暂性失败和幂等操作生效；对不可重试场景应明确选择不重试。\n\n## When To Use\n\n- 外部依赖偶发超时或抖动\n- 自动化任务需要容忍瞬时故障\n- 发布流程中存在可恢复的网络请求\n\n## Tradeoffs\n\n- 合理重试提升成功率，但错误的重试会放大事故和资源占用\n- 不重试实现最简单，但成功率和体验常受损\n\n## Evidence\n\n- 未定义边界的重试常常比没有重试更危险，因此策略必须明确写入知识库",
+      "source_path": "practices/practice-retry-strategy.md",
+      "status": "active",
+      "keywords": [
+        "retry",
+        "backoff",
+        "resilience",
+        "timeout"
+      ],
+      "tech": [
+        "retry",
+        "resilience",
+        "network"
+      ],
+      "contexts": [
+        "context-backend-api",
+        "context-automation-script",
+        "context-engineering-workflow"
+      ],
+      "constraints": [
+        "constraint-backward-compatibility",
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "practice",
+      "neighbor_ids": [
+        "constraint-backward-compatibility",
+        "constraint-low-operational-complexity",
+        "context-automation-script",
+        "context-backend-api",
+        "context-engineering-workflow",
+        "option-exponential-backoff",
+        "option-no-retry"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "option_ids": [
+        "option-exponential-backoff",
+        "option-no-retry"
+      ],
+      "ranked_option_ids": {
+        "global": [
+          "option-exponential-backoff",
+          "option-no-retry"
+        ],
+        "project-example-enterprise-web": [
+          "option-exponential-backoff",
+          "option-no-retry"
+        ],
+        "project-global": [
+          "option-exponential-backoff",
+          "option-no-retry"
+        ]
+      },
+      "recommended_options": {
+        "global": "option-exponential-backoff",
+        "project-example-enterprise-web": "option-exponential-backoff",
+        "project-global": "option-exponential-backoff"
+      }
+    },
+    {
+      "id": "practice-task-status-feedback",
+      "label": "任务状态反馈实践",
+      "type": "practice",
+      "title": "任务状态反馈实践",
+      "summary": "对用户可见或跨步骤的任务执行，应统一表达开始、进行中、成功、失败和可重试状态。",
+      "body": "## Summary\n\n对用户可见或跨步骤的任务执行，应统一表达开始、进行中、成功、失败和可重试状态。\n\n## Decision\n\n默认推荐共享状态层来表达任务进度；单点局部流程才适合局部状态处理。\n\n## When To Use\n\n- 前端页面需要统一 loading、empty、error 反馈\n- 后端异步流程需要统一任务状态\n- 工程流程需要给出明确的阶段反馈\n\n## Tradeoffs\n\n- 共享状态层便于跨模块协调，但需要收敛命名和事件边界\n- 局部状态处理简单直接，但很难支撑复杂流程复用\n\n## Evidence\n\n- 一旦任务状态跨页面、跨步骤扩散，零散局部状态会迅速降低可观察性",
+      "source_path": "practices/practice-task-status-feedback.md",
+      "status": "active",
+      "keywords": [
+        "loading",
+        "progress",
+        "status",
+        "feedback"
+      ],
+      "tech": [
+        "ui",
+        "workflow",
+        "async"
+      ],
+      "contexts": [
+        "context-frontend-crud",
+        "context-backend-api",
+        "context-engineering-workflow"
+      ],
+      "constraints": [
+        "constraint-no-extra-runtime",
+        "constraint-low-operational-complexity"
+      ],
+      "rules": [
+        "rule-shared-status-first"
+      ],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "practice",
+      "neighbor_ids": [
+        "constraint-low-operational-complexity",
+        "constraint-no-extra-runtime",
+        "context-backend-api",
+        "context-engineering-workflow",
+        "context-frontend-crud",
+        "option-local-status-handling",
+        "option-shared-status-layer",
+        "rule-shared-status-first"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {},
+      "option_ids": [
+        "option-local-status-handling",
+        "option-shared-status-layer"
+      ],
+      "ranked_option_ids": {
+        "global": [
+          "option-shared-status-layer",
+          "option-local-status-handling"
+        ],
+        "project-example-enterprise-web": [
+          "option-shared-status-layer",
+          "option-local-status-handling"
+        ],
+        "project-global": [
+          "option-shared-status-layer",
+          "option-local-status-handling"
+        ]
+      },
+      "recommended_options": {
+        "global": "option-shared-status-layer",
+        "project-example-enterprise-web": "option-shared-status-layer",
+        "project-global": "option-shared-status-layer"
+      }
+    },
+    {
+      "id": "project-example-enterprise-web",
+      "label": "示例企业 Web 项目",
+      "type": "project_profile",
+      "title": "示例企业 Web 项目",
+      "summary": "用于演示典型企业 Web 项目如何在通用知识上叠加自己的治理偏好，而不污染核心知识模型。",
+      "body": "## Summary\n\n用于演示典型企业 Web 项目如何在通用知识上叠加自己的治理偏好，而不污染核心知识模型。\n\n## Recommended Defaults\n\n- 倾向统一调用封装、共享状态层、结构化日志和集中配置\n- 对直接调用、纯文本日志和内联配置做负向调整\n\n## Constraints\n\n- 同时需要顾及前端交互体验、后端稳定性和工程治理可审计性",
+      "source_path": "projects/project-example-enterprise-web.md",
+      "status": "active",
+      "keywords": [
+        "enterprise",
+        "web",
+        "governance"
+      ],
+      "tech": [
+        "typescript",
+        "vue",
+        "node",
+        "rest",
+        "ci"
+      ],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "project_profile",
+      "neighbor_ids": [
+        "option-centralized-config",
+        "option-centralized-error-handler",
+        "option-direct-call",
+        "option-exponential-backoff",
+        "option-inline-config",
+        "option-inline-error-handler",
+        "option-local-status-handling",
+        "option-no-retry",
+        "option-plain-logging",
+        "option-shared-status-layer",
+        "option-structured-logging",
+        "option-unified-client",
+        "rule-centralized-config-default",
+        "rule-shared-status-first",
+        "rule-structured-log-first",
+        "rule-use-unified-client"
+      ],
+      "adopted_rules": [
+        "rule-use-unified-client",
+        "rule-shared-status-first",
+        "rule-structured-log-first",
+        "rule-centralized-config-default"
+      ],
+      "preferred_options": {
+        "option-unified-client": 10,
+        "option-direct-call": -12,
+        "option-shared-status-layer": 8,
+        "option-local-status-handling": -8,
+        "option-centralized-error-handler": 10,
+        "option-inline-error-handler": -6,
+        "option-structured-logging": 12,
+        "option-plain-logging": -10,
+        "option-exponential-backoff": 4,
+        "option-no-retry": -6,
+        "option-centralized-config": 9,
+        "option-inline-config": -10
+      }
+    },
+    {
+      "id": "project-global",
+      "label": "全局基线视角",
+      "type": "project_profile",
+      "title": "全局基线视角",
+      "summary": "表示跨项目复用时的默认基线视角，不附加任何项目特定加减分。",
+      "body": "## Summary\n\n表示跨项目复用时的默认基线视角，不附加任何项目特定加减分。\n\n## Recommended Defaults\n\n- 只使用 `base_score` 比较候选方案\n\n## Constraints\n\n- 不表达任何单项目偏好",
+      "source_path": "projects/project-global.md",
+      "status": "active",
+      "keywords": [
+        "global",
+        "baseline"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "project_profile",
+      "neighbor_ids": [],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "rule-centralized-config-default",
+      "label": "默认集中配置管理",
+      "type": "rule",
+      "title": "默认集中配置管理",
+      "summary": "配置默认收敛到清晰的集中入口，避免各模块内联散落并形成隐式耦合。",
+      "body": "## Summary\n\n配置默认收敛到清晰的集中入口，避免各模块内联散落并形成隐式耦合。",
+      "source_path": "rules/rule-centralized-config-default.md",
+      "status": "active",
+      "keywords": [
+        "config",
+        "defaults",
+        "governance"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "rule",
+      "neighbor_ids": [
+        "practice-config-management",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "rule-shared-status-first",
+      "label": "优先共享任务状态通道",
+      "type": "rule",
+      "title": "优先共享任务状态通道",
+      "summary": "当一个流程涉及多步骤、跨页面或跨模块反馈时，优先使用共享任务状态通道而不是零散局部状态。",
+      "body": "## Summary\n\n当一个流程涉及多步骤、跨页面或跨模块反馈时，优先使用共享任务状态通道而不是零散局部状态。",
+      "source_path": "rules/rule-shared-status-first.md",
+      "status": "active",
+      "keywords": [
+        "status",
+        "loading",
+        "progress",
+        "ux"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "rule",
+      "neighbor_ids": [
+        "practice-task-status-feedback",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "rule-structured-log-first",
+      "label": "优先结构化日志",
+      "type": "rule",
+      "title": "优先结构化日志",
+      "summary": "日志默认采用结构化字段表达关键上下文，避免只输出难以聚合的自由文本。",
+      "body": "## Summary\n\n日志默认采用结构化字段表达关键上下文，避免只输出难以聚合的自由文本。",
+      "source_path": "rules/rule-structured-log-first.md",
+      "status": "active",
+      "keywords": [
+        "logging",
+        "observability",
+        "audit"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "rule",
+      "neighbor_ids": [
+        "practice-error-handling",
+        "practice-logging",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    },
+    {
+      "id": "rule-use-unified-client",
+      "label": "优先走统一调用封装层",
+      "type": "rule",
+      "title": "优先走统一调用封装层",
+      "summary": "当一个项目存在跨模块、跨服务或跨环境的远程调用时，默认优先收敛到统一封装层。",
+      "body": "## Summary\n\n当一个项目存在跨模块、跨服务或跨环境的远程调用时，默认优先收敛到统一封装层。",
+      "source_path": "rules/rule-use-unified-client.md",
+      "status": "active",
+      "keywords": [
+        "client",
+        "wrapper",
+        "governance"
+      ],
+      "tech": [],
+      "contexts": [],
+      "constraints": [],
+      "rules": [],
+      "alternatives": [],
+      "practice": null,
+      "base_score": 0,
+      "score_breakdown": {},
+      "recommended": false,
+      "node_group": "rule",
+      "neighbor_ids": [
+        "practice-http-client",
+        "project-example-enterprise-web"
+      ],
+      "adopted_rules": [],
+      "preferred_options": {}
+    }
+  ],
+  "edges": [
+    {
+      "id": "has_option:practice-config-management->option-centralized-config",
+      "type": "has_option",
+      "from": "practice-config-management",
+      "to": "option-centralized-config"
+    },
+    {
+      "id": "alternative_to:option-centralized-config->option-inline-config",
+      "type": "alternative_to",
+      "from": "option-centralized-config",
+      "to": "option-inline-config"
+    },
+    {
+      "id": "blocked_by:option-centralized-config->constraint-auditability",
+      "type": "blocked_by",
+      "from": "option-centralized-config",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "blocked_by:option-centralized-config->constraint-no-extra-runtime",
+      "type": "blocked_by",
+      "from": "option-centralized-config",
+      "to": "constraint-no-extra-runtime"
+    },
+    {
+      "id": "has_option:practice-error-handling->option-centralized-error-handler",
+      "type": "has_option",
+      "from": "practice-error-handling",
+      "to": "option-centralized-error-handler"
+    },
+    {
+      "id": "alternative_to:option-centralized-error-handler->option-inline-error-handler",
+      "type": "alternative_to",
+      "from": "option-centralized-error-handler",
+      "to": "option-inline-error-handler"
+    },
+    {
+      "id": "blocked_by:option-centralized-error-handler->constraint-auditability",
+      "type": "blocked_by",
+      "from": "option-centralized-error-handler",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "has_option:practice-http-client->option-direct-call",
+      "type": "has_option",
+      "from": "practice-http-client",
+      "to": "option-direct-call"
+    },
+    {
+      "id": "alternative_to:option-direct-call->option-unified-client",
+      "type": "alternative_to",
+      "from": "option-direct-call",
+      "to": "option-unified-client"
+    },
+    {
+      "id": "has_option:practice-retry-strategy->option-exponential-backoff",
+      "type": "has_option",
+      "from": "practice-retry-strategy",
+      "to": "option-exponential-backoff"
+    },
+    {
+      "id": "alternative_to:option-exponential-backoff->option-no-retry",
+      "type": "alternative_to",
+      "from": "option-exponential-backoff",
+      "to": "option-no-retry"
+    },
+    {
+      "id": "blocked_by:option-exponential-backoff->constraint-backward-compatibility",
+      "type": "blocked_by",
+      "from": "option-exponential-backoff",
+      "to": "constraint-backward-compatibility"
+    },
+    {
+      "id": "blocked_by:option-exponential-backoff->constraint-low-operational-complexity",
+      "type": "blocked_by",
+      "from": "option-exponential-backoff",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "has_option:practice-config-management->option-inline-config",
+      "type": "has_option",
+      "from": "practice-config-management",
+      "to": "option-inline-config"
+    },
+    {
+      "id": "alternative_to:option-inline-config->option-centralized-config",
+      "type": "alternative_to",
+      "from": "option-inline-config",
+      "to": "option-centralized-config"
+    },
+    {
+      "id": "has_option:practice-error-handling->option-inline-error-handler",
+      "type": "has_option",
+      "from": "practice-error-handling",
+      "to": "option-inline-error-handler"
+    },
+    {
+      "id": "alternative_to:option-inline-error-handler->option-centralized-error-handler",
+      "type": "alternative_to",
+      "from": "option-inline-error-handler",
+      "to": "option-centralized-error-handler"
+    },
+    {
+      "id": "has_option:practice-task-status-feedback->option-local-status-handling",
+      "type": "has_option",
+      "from": "practice-task-status-feedback",
+      "to": "option-local-status-handling"
+    },
+    {
+      "id": "alternative_to:option-local-status-handling->option-shared-status-layer",
+      "type": "alternative_to",
+      "from": "option-local-status-handling",
+      "to": "option-shared-status-layer"
+    },
+    {
+      "id": "has_option:practice-retry-strategy->option-no-retry",
+      "type": "has_option",
+      "from": "practice-retry-strategy",
+      "to": "option-no-retry"
+    },
+    {
+      "id": "alternative_to:option-no-retry->option-exponential-backoff",
+      "type": "alternative_to",
+      "from": "option-no-retry",
+      "to": "option-exponential-backoff"
+    },
+    {
+      "id": "has_option:practice-logging->option-plain-logging",
+      "type": "has_option",
+      "from": "practice-logging",
+      "to": "option-plain-logging"
+    },
+    {
+      "id": "alternative_to:option-plain-logging->option-structured-logging",
+      "type": "alternative_to",
+      "from": "option-plain-logging",
+      "to": "option-structured-logging"
+    },
+    {
+      "id": "has_option:practice-task-status-feedback->option-shared-status-layer",
+      "type": "has_option",
+      "from": "practice-task-status-feedback",
+      "to": "option-shared-status-layer"
+    },
+    {
+      "id": "alternative_to:option-shared-status-layer->option-local-status-handling",
+      "type": "alternative_to",
+      "from": "option-shared-status-layer",
+      "to": "option-local-status-handling"
+    },
+    {
+      "id": "blocked_by:option-shared-status-layer->constraint-low-operational-complexity",
+      "type": "blocked_by",
+      "from": "option-shared-status-layer",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "has_option:practice-logging->option-structured-logging",
+      "type": "has_option",
+      "from": "practice-logging",
+      "to": "option-structured-logging"
+    },
+    {
+      "id": "alternative_to:option-structured-logging->option-plain-logging",
+      "type": "alternative_to",
+      "from": "option-structured-logging",
+      "to": "option-plain-logging"
+    },
+    {
+      "id": "blocked_by:option-structured-logging->constraint-auditability",
+      "type": "blocked_by",
+      "from": "option-structured-logging",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "blocked_by:option-structured-logging->constraint-low-operational-complexity",
+      "type": "blocked_by",
+      "from": "option-structured-logging",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "has_option:practice-http-client->option-unified-client",
+      "type": "has_option",
+      "from": "practice-http-client",
+      "to": "option-unified-client"
+    },
+    {
+      "id": "alternative_to:option-unified-client->option-direct-call",
+      "type": "alternative_to",
+      "from": "option-unified-client",
+      "to": "option-direct-call"
+    },
+    {
+      "id": "blocked_by:option-unified-client->constraint-backward-compatibility",
+      "type": "blocked_by",
+      "from": "option-unified-client",
+      "to": "constraint-backward-compatibility"
+    },
+    {
+      "id": "blocked_by:option-unified-client->constraint-no-extra-runtime",
+      "type": "blocked_by",
+      "from": "option-unified-client",
+      "to": "constraint-no-extra-runtime"
+    },
+    {
+      "id": "applies_to:practice-config-management->context-frontend-crud",
+      "type": "applies_to",
+      "from": "practice-config-management",
+      "to": "context-frontend-crud"
+    },
+    {
+      "id": "applies_to:practice-config-management->context-backend-api",
+      "type": "applies_to",
+      "from": "practice-config-management",
+      "to": "context-backend-api"
+    },
+    {
+      "id": "applies_to:practice-config-management->context-automation-script",
+      "type": "applies_to",
+      "from": "practice-config-management",
+      "to": "context-automation-script"
+    },
+    {
+      "id": "applies_to:practice-config-management->context-engineering-workflow",
+      "type": "applies_to",
+      "from": "practice-config-management",
+      "to": "context-engineering-workflow"
+    },
+    {
+      "id": "limited_by:practice-config-management->constraint-auditability",
+      "type": "limited_by",
+      "from": "practice-config-management",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "limited_by:practice-config-management->constraint-no-extra-runtime",
+      "type": "limited_by",
+      "from": "practice-config-management",
+      "to": "constraint-no-extra-runtime"
+    },
+    {
+      "id": "governed_by:practice-config-management->rule-centralized-config-default",
+      "type": "governed_by",
+      "from": "practice-config-management",
+      "to": "rule-centralized-config-default"
+    },
+    {
+      "id": "applies_to:practice-error-handling->context-frontend-crud",
+      "type": "applies_to",
+      "from": "practice-error-handling",
+      "to": "context-frontend-crud"
+    },
+    {
+      "id": "applies_to:practice-error-handling->context-backend-api",
+      "type": "applies_to",
+      "from": "practice-error-handling",
+      "to": "context-backend-api"
+    },
+    {
+      "id": "applies_to:practice-error-handling->context-automation-script",
+      "type": "applies_to",
+      "from": "practice-error-handling",
+      "to": "context-automation-script"
+    },
+    {
+      "id": "applies_to:practice-error-handling->context-engineering-workflow",
+      "type": "applies_to",
+      "from": "practice-error-handling",
+      "to": "context-engineering-workflow"
+    },
+    {
+      "id": "limited_by:practice-error-handling->constraint-auditability",
+      "type": "limited_by",
+      "from": "practice-error-handling",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "limited_by:practice-error-handling->constraint-low-operational-complexity",
+      "type": "limited_by",
+      "from": "practice-error-handling",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "governed_by:practice-error-handling->rule-structured-log-first",
+      "type": "governed_by",
+      "from": "practice-error-handling",
+      "to": "rule-structured-log-first"
+    },
+    {
+      "id": "applies_to:practice-http-client->context-frontend-crud",
+      "type": "applies_to",
+      "from": "practice-http-client",
+      "to": "context-frontend-crud"
+    },
+    {
+      "id": "applies_to:practice-http-client->context-backend-api",
+      "type": "applies_to",
+      "from": "practice-http-client",
+      "to": "context-backend-api"
+    },
+    {
+      "id": "applies_to:practice-http-client->context-automation-script",
+      "type": "applies_to",
+      "from": "practice-http-client",
+      "to": "context-automation-script"
+    },
+    {
+      "id": "limited_by:practice-http-client->constraint-auditability",
+      "type": "limited_by",
+      "from": "practice-http-client",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "limited_by:practice-http-client->constraint-backward-compatibility",
+      "type": "limited_by",
+      "from": "practice-http-client",
+      "to": "constraint-backward-compatibility"
+    },
+    {
+      "id": "limited_by:practice-http-client->constraint-no-extra-runtime",
+      "type": "limited_by",
+      "from": "practice-http-client",
+      "to": "constraint-no-extra-runtime"
+    },
+    {
+      "id": "governed_by:practice-http-client->rule-use-unified-client",
+      "type": "governed_by",
+      "from": "practice-http-client",
+      "to": "rule-use-unified-client"
+    },
+    {
+      "id": "applies_to:practice-logging->context-frontend-crud",
+      "type": "applies_to",
+      "from": "practice-logging",
+      "to": "context-frontend-crud"
+    },
+    {
+      "id": "applies_to:practice-logging->context-backend-api",
+      "type": "applies_to",
+      "from": "practice-logging",
+      "to": "context-backend-api"
+    },
+    {
+      "id": "applies_to:practice-logging->context-automation-script",
+      "type": "applies_to",
+      "from": "practice-logging",
+      "to": "context-automation-script"
+    },
+    {
+      "id": "applies_to:practice-logging->context-engineering-workflow",
+      "type": "applies_to",
+      "from": "practice-logging",
+      "to": "context-engineering-workflow"
+    },
+    {
+      "id": "limited_by:practice-logging->constraint-auditability",
+      "type": "limited_by",
+      "from": "practice-logging",
+      "to": "constraint-auditability"
+    },
+    {
+      "id": "limited_by:practice-logging->constraint-low-operational-complexity",
+      "type": "limited_by",
+      "from": "practice-logging",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "governed_by:practice-logging->rule-structured-log-first",
+      "type": "governed_by",
+      "from": "practice-logging",
+      "to": "rule-structured-log-first"
+    },
+    {
+      "id": "applies_to:practice-retry-strategy->context-backend-api",
+      "type": "applies_to",
+      "from": "practice-retry-strategy",
+      "to": "context-backend-api"
+    },
+    {
+      "id": "applies_to:practice-retry-strategy->context-automation-script",
+      "type": "applies_to",
+      "from": "practice-retry-strategy",
+      "to": "context-automation-script"
+    },
+    {
+      "id": "applies_to:practice-retry-strategy->context-engineering-workflow",
+      "type": "applies_to",
+      "from": "practice-retry-strategy",
+      "to": "context-engineering-workflow"
+    },
+    {
+      "id": "limited_by:practice-retry-strategy->constraint-backward-compatibility",
+      "type": "limited_by",
+      "from": "practice-retry-strategy",
+      "to": "constraint-backward-compatibility"
+    },
+    {
+      "id": "limited_by:practice-retry-strategy->constraint-low-operational-complexity",
+      "type": "limited_by",
+      "from": "practice-retry-strategy",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "applies_to:practice-task-status-feedback->context-frontend-crud",
+      "type": "applies_to",
+      "from": "practice-task-status-feedback",
+      "to": "context-frontend-crud"
+    },
+    {
+      "id": "applies_to:practice-task-status-feedback->context-backend-api",
+      "type": "applies_to",
+      "from": "practice-task-status-feedback",
+      "to": "context-backend-api"
+    },
+    {
+      "id": "applies_to:practice-task-status-feedback->context-engineering-workflow",
+      "type": "applies_to",
+      "from": "practice-task-status-feedback",
+      "to": "context-engineering-workflow"
+    },
+    {
+      "id": "limited_by:practice-task-status-feedback->constraint-no-extra-runtime",
+      "type": "limited_by",
+      "from": "practice-task-status-feedback",
+      "to": "constraint-no-extra-runtime"
+    },
+    {
+      "id": "limited_by:practice-task-status-feedback->constraint-low-operational-complexity",
+      "type": "limited_by",
+      "from": "practice-task-status-feedback",
+      "to": "constraint-low-operational-complexity"
+    },
+    {
+      "id": "governed_by:practice-task-status-feedback->rule-shared-status-first",
+      "type": "governed_by",
+      "from": "practice-task-status-feedback",
+      "to": "rule-shared-status-first"
+    },
+    {
+      "id": "adopts_rule:project-example-enterprise-web->rule-use-unified-client",
+      "type": "adopts_rule",
+      "from": "project-example-enterprise-web",
+      "to": "rule-use-unified-client"
+    },
+    {
+      "id": "adopts_rule:project-example-enterprise-web->rule-shared-status-first",
+      "type": "adopts_rule",
+      "from": "project-example-enterprise-web",
+      "to": "rule-shared-status-first"
+    },
+    {
+      "id": "adopts_rule:project-example-enterprise-web->rule-structured-log-first",
+      "type": "adopts_rule",
+      "from": "project-example-enterprise-web",
+      "to": "rule-structured-log-first"
+    },
+    {
+      "id": "adopts_rule:project-example-enterprise-web->rule-centralized-config-default",
+      "type": "adopts_rule",
+      "from": "project-example-enterprise-web",
+      "to": "rule-centralized-config-default"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-unified-client",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-unified-client"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-direct-call",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-direct-call"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-shared-status-layer",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-shared-status-layer"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-local-status-handling",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-local-status-handling"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-centralized-error-handler",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-centralized-error-handler"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-inline-error-handler",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-inline-error-handler"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-structured-logging",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-structured-logging"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-plain-logging",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-plain-logging"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-exponential-backoff",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-exponential-backoff"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-no-retry",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-no-retry"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-centralized-config",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-centralized-config"
+    },
+    {
+      "id": "prefers_option:project-example-enterprise-web->option-inline-config",
+      "type": "prefers_option",
+      "from": "project-example-enterprise-web",
+      "to": "option-inline-config"
+    }
+  ]
+}

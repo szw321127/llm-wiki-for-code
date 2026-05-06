@@ -1,0 +1,20 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "local-project-knowledge",
+  "description": "Local Project Knowledge marketplace for Claude Code",
+  "owner": {
+    "name": "hugo"
+  },
+  "plugins": [
+    {
+      "name": "pk",
+      "description": "Project knowledge skills for Claude Code.",
+      "version": "0.1.16",
+      "author": {
+        "name": "hugo"
+      },
+      "source": "./plugins/pk",
+      "category": "Productivity"
+    }
+  ]
+}

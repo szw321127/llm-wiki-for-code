@@ -1,0 +1,11 @@
+{
+  "sessionId": "session-YYYY-MM-DD-topic",
+  "title": "本轮任务标题",
+  "topic": "本轮任务主题",
+  "taskText": "用于匹配已有实践的任务描述",
+  "decisionSummary": "一句话总结本轮关键决策。",
+  "touchedFiles": ["src/example.ts"],
+  "adoptedNodeIds": [],
+  "incubatingNodes": [],
+  "stableUpdates": []
+}
