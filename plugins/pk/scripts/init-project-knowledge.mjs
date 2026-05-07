@@ -267,7 +267,7 @@ async function writeCoreDocuments(knowledgeRoot, scan) {
   );
   await fs.writeFile(
     path.join(knowledgeRoot, "workflow.md"),
-    "# 工作流\n\n- 双击 `open-graph.cmd` 打开当前项目的图谱预览\n- 在 Codex 技能列表中使用 `pk:pk-status` 查看当前知识库状态\n- 在 Codex 技能列表中使用 `pk:pk-graph` 刷新图谱阅读层\n- 在任务结束时由 agent 做轻量结晶判断\n",
+    "# 工作流\n\n- 双击 `open-graph.cmd` 打开当前项目的图谱预览\n- 在 Codex 技能列表中使用 `pk-status` 查看当前知识库状态\n- 在 Codex 技能列表中使用 `pk-graph` 刷新图谱阅读层\n- 在任务结束时由 agent 做轻量结晶判断\n",
     "utf8"
   );
   await fs.writeFile(

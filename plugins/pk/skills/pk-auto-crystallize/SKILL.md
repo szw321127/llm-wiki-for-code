@@ -14,9 +14,9 @@ Treat this skill as the preferred task-end entrypoint when the user wants the pr
 - The wrapper delegates to `auto-crystallize-session.mjs`.
 - If `.project-knowledge/project-profile.md` is missing, return `mode: no-knowledge` and skip crystallization entirely; do not scan touched files, create sessions, or create `.project-knowledge/`.
 - Prefer passing a JSON input file after the project path when the task summary, touched files, or session id are known.
-- If `adoptedNodeIds` is omitted, allow the script to infer adopted recommended options from `pk:pk-preflight` matches.
+- If `adoptedNodeIds` is omitted, allow the script to infer adopted recommended options from `pk-preflight` matches.
 - If `incubatingNodes` is omitted and no practice matches, allow the script to create an incubating practice plus candidate option from `taskText` and `touchedFiles`.
-- Report the result in Chinese and include `mode`, inferred adopted nodes, generated incubating nodes, touched files, and the next suggested skill `pk:pk-lint`; when skipped because knowledge is uninitialized, suggest `pk:pk-init` instead.
+- Report the result in Chinese and include `mode`, inferred adopted nodes, generated incubating nodes, touched files, and the next suggested skill `pk-lint`; when skipped because knowledge is uninitialized, suggest `pk-init` instead.
 
 ## JSON Input Shape
 

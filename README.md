@@ -1,57 +1,59 @@
 # Project Knowledge
 
-Project Knowledge 是一套面向 Codex 与 Claude Code 的项目知识沉淀工具。它把长期项目里的代码实践、推荐方案、会话结论和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续对话可以先查已有实践，再决定是否扫描项目代码。
+Project Knowledge is a local knowledge-base and knowledge-graph workflow for Codex and Claude Code. It stores durable project practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory so later AI sessions can check existing conventions before scanning the same code again.
 
-它的目标不是替代代码仓库，也不是保存完整代码片段，而是让 AI 在多轮任务中逐步形成“这个项目通常怎么做”的可检索知识库。
+The npm package name is currently `llm-wiki-for-code`, while the user-facing tool and plugin are named Project Knowledge / `pk`.
 
-## 解决的问题
+Chinese documentation: [READE_CN.md](READE_CN.md)
 
-长期项目里，AI 协作常见几个问题：
+## What It Solves
 
-- 每次对话都像第一次看项目，重复翻同一批代码。
-- 同一类场景会出现多个实现，缺少稳定推荐。
-- 任务结束后的决策没有沉淀，下次无法复用。
-- 知识库越来越大后，直接塞进上下文会浪费 token。
-- 临时计划文件、worktree 文件和会被删除的文档容易污染长期证据。
+Long-running AI-assisted projects often accumulate repeated context work:
 
-Project Knowledge 的做法是：
+- Every new session starts by reading the same files again.
+- Similar implementation scenarios drift into multiple inconsistent solutions.
+- Task decisions disappear after the conversation ends.
+- Large knowledge stores waste context if they are pasted wholesale into the model.
+- Temporary plans, worktree files, and generated docs can pollute long-term evidence.
 
-- 任务开始前用 `pk:pk-preflight` 查已有实践和推荐方案。
-- 任务结束后用 `pk:pk-auto-crystallize` 自动记录采纳和孵化知识。
-- 用采纳次数、分数和治理规则维护推荐池。
-- 每个实践最多保留 3 个推荐方案，其余退回孵化或等待处理。
-- 只返回 Top-K 实践和 evidence 预览，避免把整个知识库放进上下文。
+Project Knowledge addresses this by:
 
-## 核心模型
+- Running `pk-preflight` before a task to retrieve matching practices and recommendations.
+- Running `pk-auto-crystallize` after a task to record adopted or incubating knowledge.
+- Maintaining recommendation pools with adoption counts, scores, and governance rules.
+- Keeping at most 3 recommended options for each practice.
+- Returning only Top-K practices and evidence previews instead of loading the full knowledge base.
 
-`.project-knowledge/` 是项目级知识库，也是 Markdown 事实源。图谱、索引、Obsidian 视图都是从这些 Markdown 文件生成出来的。
+## Core Model
 
-主要节点类型：
+`.project-knowledge/` is the project-level knowledge base and the Markdown source of truth. Graph data, indexes, Obsidian views, and the browser graph are generated from those Markdown files.
 
-- `project_profile`：项目画像，记录技术栈、默认规则和偏好方案。
-- `practice`：可复用实践，例如“HTTP 调用应统一封装”。
-- `option`：实践下的候选方案，例如“统一 client”或“直接调用”。
-- `rule`：约束性规则。
-- `context` / `constraint`：适用场景和限制条件。
-- `session`：一次任务的历史记录。
+Main node types:
 
-知识生命周期：
+- `project_profile`: project-level profile, including stack, default rules, and preferred options.
+- `practice`: reusable engineering practice, such as "route HTTP calls through a shared client".
+- `option`: candidate implementation option under a practice.
+- `rule`: binding or strongly preferred constraint.
+- `context` / `constraint`: applicability and limitation nodes.
+- `session`: a record of one task or conversation.
 
-- 新知识默认进入 `incubating`。
-- 多次被采纳后成为转正候选。
-- 推荐池最多保留 3 个方案。
-- 被淘汰或人工打回的方案不会直接删除，会退回孵化区并标记状态。
+Knowledge lifecycle:
 
-## 证据规则
+- New knowledge normally starts in `incubating`.
+- Repeated adoption can make a node eligible for promotion.
+- Each practice keeps a recommendation pool with at most 3 options.
+- Demoted, rejected, or duplicate options are moved back to incubation instead of being physically deleted.
 
-`source_evidence` 只应该指向长期存在的项目源码相对路径，例如：
+## Evidence Rules
+
+`source_evidence` should point only to stable project source paths, for example:
 
 ```text
 src/api/client.ts
 src/runtime/scheduler.ts
 ```
 
-这些路径不会作为长期证据：
+These paths are intentionally excluded as long-term evidence:
 
 - `.worktrees/`
 - `.project-knowledge/`
@@ -63,107 +65,66 @@ src/runtime/scheduler.ts
 - `findings.md`
 - `progress.md`
 
-原因是这些内容经常是临时计划、协作过程文件、生成物或后续可能被清理的文档。它们可以帮助当前对话理解上下文，但不能支撑长期推荐实践。
+The reason is that these files are often plans, collaboration artifacts, generated output, local tool state, or documents that may be cleaned up later. They can help the current session, but they should not justify long-term project recommendations.
 
-项目也不保存完整代码片段作为主证据。推荐的证据形态是：
+Project Knowledge also avoids storing complete code snippets as primary evidence. Preferred evidence is:
 
-- 稳定源码相对路径
-- 实践摘要
-- 方案摘要
-- 采纳次数
-- 必要时由后续版本扩展 symbol、hash 或短摘要
+- Stable source-relative paths
+- Practice summaries
+- Option summaries
+- Adoption counts
+- Future-friendly metadata such as symbols, hashes, or short summaries when needed
 
-## 安装
+## Requirements
 
-### 1. 获取仓库并安装依赖
+- Node.js with native ESM support.
+- npm for running the bundled scripts.
+- Codex or Claude Code only if you want to install the `pk` skills as an assistant plugin.
+
+This repository currently relies on Node's built-in test runner and local scripts.
+
+## Installation
+
+### 1. Clone the Repository
 
 ```bash
 git clone <repository-url>
 cd <repository-directory>
 ```
 
-安装后可以先运行测试确认环境可用：
+Run the test suite to confirm the local environment:
 
 ```bash
 npm test
 ```
 
-### 2. 作为普通 CLI 使用
+### 2. Use as a Plain CLI
 
-不安装 Codex plugin 也可以直接通过 npm 脚本使用：
+The scripts can be used directly without installing any assistant plugin:
 
 ```bash
 npm run pk:init -- <project-root>
-npm run pk:preflight -- <project-root> "实现 HTTP 调用"
+npm run pk:preflight -- <project-root> "implement HTTP calls"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 ```
 
-这种方式适合手动执行脚本，或者在其它自动化流程里调用。
+This mode is useful for manual use, CI jobs, or other automation.
 
-### 3. 安装为 Codex 技能包
+### 3. Install for Codex
 
-如果希望在 Codex 对话中直接使用 `pk:*` 技能，执行：
-
-```bash
-npm run codex:install
-```
-
-该命令会：
-
-- 在 `~/plugins/pk` 创建指向当前仓库 `plugins/pk/` 的本地插件链接。
-- 在 `~/.agents/plugins/marketplace.json` 写入 `pk` marketplace 条目。
-- 使用 `INSTALLED_BY_DEFAULT`，让 Codex 启动时自动发现技能包。
-
-安装后需要完全重启 Codex。重启后在技能列表中应该能看到：
-
-```text
-pk:pk-init
-pk:pk-preflight
-pk:pk-status
-pk:pk-graph
-pk:pk-crystallize
-pk:pk-auto-crystallize
-pk:pk-lint
-pk:pk-govern
-pk:pk-serve
-```
-
-升级当前仓库后，可以重新执行：
+To use the `pk:*` skills directly inside Codex:
 
 ```bash
 npm run codex:install
 ```
 
-卸载：
+The installer:
 
-```bash
-npm run codex:uninstall
-```
+- Creates a local plugin link from the current repository's `plugins/pk/` directory.
+- Writes a `local-project-knowledge` marketplace entry under the user's `.agents/plugins/marketplace.json`.
+- Marks the plugin as `INSTALLED_BY_DEFAULT`.
 
-### 4. 安装为 Claude Code 插件
-
-在 Claude Code 对话中直接使用 pk 技能：
-
-```bash
-/plugin marketplace add <repository-root>
-/plugin install pk@local-project-knowledge
-```
-
-例如：
-
-```bash
-/plugin marketplace add /path/to/llm-wiki-for-code
-/plugin install pk@local-project-knowledge
-```
-
-该命令会：
-
-- 注册 `local-project-knowledge` marketplace。
-- 从 marketplace 安装 `pk` 插件。
-- 在 `~/.claude/plugins/installed_plugins.json` 注册 pk 插件。
-- 在 `~/.claude/settings.json` 的 `enabledPlugins` 中启用 pk 插件。
-
-安装后需要**完全重启 Claude Code**，让插件在启动时被加载。重启后在技能列表中应该能看到：
+Fully restart Codex after installation. The skill list should then include:
 
 ```text
 pk-init
@@ -177,87 +138,99 @@ pk-govern
 pk-serve
 ```
 
-升级当前仓库后，重新执行：
+After updating this repository, run the installer again:
+
+```bash
+npm run codex:install
+```
+
+Uninstall:
+
+```bash
+npm run codex:uninstall
+```
+
+### 4. Install for Claude Code
+
+Use Claude Code's standard plugin commands:
+
+```bash
+/plugin marketplace add <repository-root>
+/plugin install pk@local-project-knowledge
+```
+
+Example:
+
+```bash
+/plugin marketplace add /path/to/universal-practice-knowledge-graph
+/plugin install pk@local-project-knowledge
+```
+
+This registers the `local-project-knowledge` marketplace and installs the `pk` plugin from `plugins/pk/`.
+
+Fully restart Claude Code after installation. The skill list should include:
+
+```text
+pk-init
+pk-preflight
+pk-status
+pk-graph
+pk-crystallize
+pk-auto-crystallize
+pk-lint
+pk-govern
+pk-serve
+```
+
+Update:
 
 ```bash
 /plugin update pk@local-project-knowledge
 ```
 
-卸载：
+Uninstall:
 
 ```bash
 /plugin uninstall pk@local-project-knowledge
 ```
 
-### 5. 初始化目标项目
+### 5. Initialize a Target Project
 
-安装工具后，还需要对目标项目执行初始化：
+After installing or cloning the tool, opt a target project into the workflow:
 
 ```bash
 npm run pk:init -- <project-root>
 ```
 
-或者在 Codex 中使用：
+Or from Codex:
 
 ```text
-pk:pk-init
+pk-init
 ```
 
-初始化后，目标项目根目录会出现 `.project-knowledge/`。只有存在这个目录的项目才会进入知识库流程；未初始化项目会返回 `mode: no-knowledge` 并跳过扫描和沉淀。
+Initialization creates `.project-knowledge/` in the target project. Projects without this directory return `mode: no-knowledge` and skip project-knowledge workflows.
 
-## 快速开始
-
-初始化后，可以直接用 npm 脚本操作：
+## Quick Start
 
 ```bash
 npm test
 npm run pk:init -- <project-root>
-npm run pk:preflight -- <project-root> "实现 HTTP 调用"
+npm run pk:status -- <project-root>
+npm run pk:preflight -- <project-root> "implement HTTP calls"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 npm run pk:lint -- <project-root>
 npm run pk:govern -- <project-root>
+npm run pk:graph -- <project-root>
 npm run pk:serve -- <project-root> 8124
 ```
 
-如果命令不传 `<project-root>`，脚本会使用当前工作目录。
+If `<project-root>` is omitted, scripts use the current working directory.
 
-## 技能包
+## Skill Entry Points
 
-仓库同时内置 Codex plugin 技能包与 Claude Code 技能包。
+The repository ships both a Codex plugin and a Claude Code plugin.
 
-### Codex 技能
-
-技能名如下：
-
-```text
-pk:pk-init
-pk:pk-preflight
-pk:pk-status
-pk:pk-graph
-pk:pk-crystallize
-pk:pk-auto-crystallize
-pk:pk-lint
-pk:pk-govern
-pk:pk-serve
-```
-
-推荐安装方式：
-
-```bash
-npm run codex:install
-```
-
-它会把 `plugins/pk/` 接入 Codex 的插件发现路径，并写入 marketplace 配置。安装后需要完全重启 Codex，技能列表中才会出现 `pk:*` 技能。
-
-卸载：
-
-```bash
-npm run codex:uninstall
-```
-
-### Claude Code 插件
-
-技能名如下：
+Codex skill names:
 
 ```text
 pk-init
@@ -271,35 +244,36 @@ pk-govern
 pk-serve
 ```
 
-推荐安装方式：
+Claude Code skill names:
 
-```bash
-/plugin marketplace add <repository-root>
-/plugin install pk@local-project-knowledge
+```text
+pk-init
+pk-preflight
+pk-status
+pk-graph
+pk-crystallize
+pk-auto-crystallize
+pk-lint
+pk-govern
+pk-serve
 ```
 
-安装后需要**完全重启 Claude Code**。
+## Common Workflows
 
-卸载：
-
-```bash
-/plugin uninstall pk@local-project-knowledge
-```
-
-## 常用流程
-
-### 1. 初始化项目知识库
+### Initialize a Knowledge Base
 
 ```bash
 npm run pk:init -- <project-root>
 ```
 
-会在目标项目中创建 `.project-knowledge/`，包括：
+This creates `.project-knowledge/` with:
 
 - `project-profile.md`
 - `practices/`
 - `options/`
 - `rules/`
+- `contexts/`
+- `constraints/`
 - `incubating/`
 - `sessions/`
 - `state/`
@@ -308,171 +282,176 @@ npm run pk:init -- <project-root>
 - `.obsidian/`
 - `open-graph.cmd`
 
-如果项目没有初始化，`pk:preflight` 和 `pk:auto-crystallize` 会返回 `mode: no-knowledge`，不会扫描代码，也不会创建知识库。
+If a project is not initialized, `pk:preflight` and `pk:auto-crystallize` return `mode: no-knowledge`; they do not scan code or create a knowledge base.
 
-### 2. 任务开始前预检
+### Inspect Current Status
 
 ```bash
-npm run pk:preflight -- <project-root> "实现 HTTP 调用"
+npm run pk:status -- <project-root>
 ```
 
-预检会优先查 `.project-knowledge/`：
+Status summarizes the current `.project-knowledge/` state, including node counts and health signals.
 
-- 命中已有实践时返回 `mode: knowledge-hit`。
-- 没命中但项目已初始化时返回 `mode: needs-project-scan`，并给出有限的源码 evidence hints。
-- 项目未初始化时返回 `mode: no-knowledge`。
+### Preflight Before a Task
 
-为了控制上下文大小，默认只返回：
+```bash
+npm run pk:preflight -- <project-root> "implement HTTP calls"
+```
+
+Preflight reads `.project-knowledge/` first:
+
+- `mode: knowledge-hit` when existing practices match.
+- `mode: needs-project-scan` when the project is initialized but knowledge is missing.
+- `mode: no-knowledge` when the project is not initialized.
+
+To control context size, default output is limited to:
 
 - Top 5 practices
-- 每个节点最多 5 条 evidence 预览
-- 每类扫描 hint 最多 5 条
+- Up to 5 evidence previews per node
+- Up to 5 scan hints per category
 
-### 3. 任务结束后自动沉淀
+### Auto-Crystallize After a Task
 
 ```bash
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 ```
 
-输入示例：
+Input example:
 
 ```json
 {
   "sessionId": "session-YYYY-MM-DD-topic",
-  "title": "本轮任务标题",
-  "topic": "任务主题",
-  "taskText": "任务描述",
-  "decisionSummary": "本轮关键决策。",
+  "title": "Task title",
+  "topic": "Task topic",
+  "taskText": "Task description",
+  "decisionSummary": "One-sentence summary of the key decision.",
   "touchedFiles": ["src/example.ts"]
 }
 ```
 
-行为：
+Behavior:
 
-- 命中已有实践时，自动记录推荐方案被采纳。
-- 未命中且存在有效源码变更时，生成孵化中的 practice 和 option。
-- 只有临时文件、文档或 worktree 变更时，只记录 session，不生成孵化知识。
-- 显式传入 `adoptedNodeIds` 或 `incubatingNodes` 时优先使用显式输入。
+- If the task matches an existing practice, the selected recommendation is recorded as adopted.
+- If no match exists and stable source files changed, an incubating practice and option may be created.
+- If only temporary files, docs, or worktree files changed, only the session is recorded.
+- Explicit `adoptedNodeIds`, `incubatingNodes`, or `stableUpdates` take precedence over inference.
 
-### 4. 手动结晶
+### Manually Crystallize Knowledge
 
 ```bash
 npm run pk:crystallize -- <project-root> <crystallize-input.json>
 ```
 
-模板位于：
+Use manual crystallization when you already know which node should be adopted, created, or updated.
+
+Templates:
 
 ```text
 templates/crystallize-input-template.json
+templates/auto-crystallize-input-template.json
 ```
 
-适合在你已经明确知道要采纳哪个节点、创建哪个候选节点、或更新稳定知识时使用。
-
-### 5. 检查知识库健康
+### Lint Knowledge Health
 
 ```bash
 npm run pk:lint -- <project-root>
 ```
 
-会报告：
+The linter reports:
 
-- `node-missing-evidence`：节点缺少证据。
-- `node-volatile-evidence`：节点引用了临时或不稳定 evidence。
-- `option-missing-practice`：方案没有有效实践归属。
-- `practice-empty-recommendation-pool`：实践没有可推荐方案。
-- `incubating-promotion-candidate`：孵化节点达到转正阈值。
-- `recommendation-pool-eviction-candidate`：推荐池超过 3 个方案。
-- `possible-duplicate-node`：疑似重复知识节点。
+- `node-missing-evidence`: a node has no evidence.
+- `node-volatile-evidence`: a node references temporary or unstable evidence.
+- `option-missing-practice`: an option has no valid parent practice.
+- `practice-empty-recommendation-pool`: a practice has no recommended option.
+- `incubating-promotion-candidate`: an incubating node reached the promotion threshold.
+- `recommendation-pool-eviction-candidate`: a practice has more than 3 recommended options.
+- `possible-duplicate-node`: two nodes may represent duplicate knowledge.
 
-### 6. 自动治理
+### Apply Reversible Governance
 
 ```bash
 npm run pk:govern -- <project-root>
 ```
 
-自动治理只做可逆操作：
+Governance performs only reversible changes:
 
-- 达到采纳阈值且未被打回的孵化节点会转入稳定区。
-- 推荐池排位外的方案会退回孵化区并标记 rejected。
-- 强重复节点会保留更强节点，另一个退回孵化区并标记 duplicate。
-- 不会物理删除知识文件。
+- Promotes eligible incubating nodes.
+- Demotes options outside the top 3 recommendation pool.
+- Marks strong duplicates as rejected and moves them to incubation.
+- Never physically deletes knowledge files.
 
-### 7. 查看图谱
+### Build or Serve the Graph
 
 ```bash
+npm run pk:graph -- <project-root>
 npm run pk:serve -- <project-root> 8124
 ```
 
-也可以在初始化后的项目里双击：
+On Windows, initialized projects can also launch:
 
 ```text
 .project-knowledge/open-graph.cmd
 ```
 
-图谱页支持：
+The graph page supports:
 
-- 查看 practice、option、rule、context 的关系。
-- 查看推荐池和 evidence。
-- 对不合适的孵化节点执行打回。
+- Browsing relationships among practices, options, rules, contexts, and constraints.
+- Inspecting recommendation pools and evidence.
+- Rejecting unsuitable incubating nodes from the graph UI.
 
-## Obsidian 兼容
+## Obsidian Compatibility
 
-`.project-knowledge/` 可以直接作为 Obsidian vault 打开。系统会维护：
+`.project-knowledge/` can be opened as an Obsidian vault. The workflow maintains:
 
-- `index.md`：知识库入口。
-- `log.md`：操作日志。
-- `_views/practices.md`：按实践聚合推荐池。
-- `_views/incubating.md`：孵化知识入口。
-- `_views/sessions.md`：会话记录入口。
+- `index.md`: knowledge-base entry point.
+- `log.md`: operation log.
+- `_views/practices.md`: practice-centered recommendation pools.
+- `_views/incubating.md`: incubating knowledge index.
+- `_views/sessions.md`: session index.
 - `.obsidian/app.json`
 - `.obsidian/graph.json`
 
-知识节点会生成 `Links` 区，使用 `[[node-id]]` 连接相关 practice、option、rule、context 和 constraint。
+Knowledge node files include `Links` sections with `[[node-id]]` references between related practices, options, rules, contexts, and constraints.
 
-## 仓库结构
+## Repository Structure
 
 ```text
 .
-├─ .agents/                       # 本地 marketplace 示例
-├─ assets/                        # 项目图谱前端资产模板
-├─ knowledge/                     # 通用图谱原型和回归验证资产
-├─ plugins/pk/                    # Codex / Claude Code 技能包
-│  ├─ .codex-plugin/              # Codex plugin 配置
-│  ├─ .claude-plugin/             # Claude Code plugin 配置
-│  ├─ skills/                     # 技能文件（Codex / Claude Code 共用）
-│  └─ scripts/                    # 共享脚本实现
-├─ scripts/                       # pk:* 脚本实现
-├─ seed/                          # 初始化基线知识
-├─ templates/                     # 知识节点和输入 JSON 模板
-├─ tests/                         # Node test 回归测试
-├─ SKILL.md                       # 根 skill 说明
-└─ README.md
+|-- .agents/                       # Local Codex marketplace metadata
+|-- .claude-plugin/                # Claude Code marketplace metadata
+|-- assets/                        # Project graph frontend assets
+|-- docs/                          # Design and implementation plans
+|-- knowledge/                     # Prototype/global graph data and regression assets
+|-- plugins/pk/                    # Codex and Claude Code plugin package
+|   |-- .codex-plugin/             # Codex plugin manifest
+|   |-- .claude-plugin/            # Claude Code plugin manifest
+|   |-- assets/                    # Plugin graph assets
+|   |-- scripts/                   # Plugin command wrappers and shared scripts
+|   `-- skills/                    # Skill definitions
+|-- scripts/                       # npm script implementations
+|-- seed/                          # Baseline knowledge used during initialization
+|-- templates/                     # Markdown and JSON templates
+|-- tests/                         # Node test suite
+|-- SKILL.md                       # Root skill definition
+|-- README.md                      # English documentation
+`-- READE_CN.md                    # Chinese documentation
 ```
 
-## 验证
+## Verification
+
+Run the full test suite:
 
 ```bash
 npm test
 ```
 
-当前测试覆盖：
+The current tests cover initialization, preflight context budgeting, crystallization, auto-crystallization, evidence filtering, recommendation-pool governance, Obsidian output, graph generation, graph runtime behavior, plugin command shells, Codex local plugin installation, and publish-content sanitization.
 
-- 初始化扫描
-- 预检上下文预算
-- 自动结晶
-- 手动结晶
-- 证据过滤
-- 推荐池治理
-- Obsidian 输出
-- 图谱生成和前端行为
-- Codex plugin 安装路径
-- 发布内容净化
+## Release Check
 
-## 发布前检查
+The repository includes `tests/content-sanitization.test.mjs` to prevent local absolute paths, user names, and unrelated project residue from entering publishable content.
 
-仓库包含 `tests/content-sanitization.test.mjs`，用于阻止本地绝对路径、用户名和项目业务残留进入发布内容。
-
-推荐发布前执行：
+Before publishing:
 
 ```bash
 npm test
