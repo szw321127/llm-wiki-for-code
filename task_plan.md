@@ -90,10 +90,10 @@
 
 | 阶段 | 状态 | 说明 |
 | --- | --- | --- |
-| 1. 明确缺口 | 已完成 | 当前 `pk:pk-crystallize` 是手动结晶，缺少任务结束后的自动推断入口 |
+| 1. 明确缺口 | 已完成 | 当前 `pk-crystallize` 是手动结晶，缺少任务结束后的自动推断入口 |
 | 2. 新增失败测试 | 已完成 | 覆盖命中已有实践自动 adopted、未命中新场景自动孵化、CLI JSON 输入 |
 | 3. 实现自动结晶层 | 已完成 | 新增 `auto-crystallize-session.mjs`，复用 preflight 和 crystallize |
-| 4. 接入 Codex skill | 已完成 | 新增 `pk:pk-auto-crystallize`，更新 manifest、README、模板和 npm 脚本 |
+| 4. 接入 Codex skill | 已完成 | 新增 `pk-auto-crystallize`，更新 manifest、README、模板和 npm 脚本 |
 | 5. 验证与安装 | 已完成 | `npm test` 57/57 通过，已重新执行 `npm run codex:install` |
 
 ## 2026-04-30 知识治理补强
@@ -102,7 +102,7 @@
 | --- | --- | --- |
 | 1. 生命周期状态 | 已完成 | 图构建会标记达到采纳阈值的孵化节点为 `promotion_candidate` |
 | 2. 推荐池淘汰候选 | 已完成 | 每个实践每个视角保留最多 3 个推荐方案，并输出排位外 `evicted_option_ids` |
-| 3. lint 治理报告 | 已完成 | `pk:pk-lint` 报告孵化转正、推荐池淘汰和疑似重复节点 |
+| 3. lint 治理报告 | 已完成 | `pk-lint` 报告孵化转正、推荐池淘汰和疑似重复节点 |
 | 4. 插件同步与安装 | 已完成 | 插件脚本、文档和 manifest 已同步到 `0.1.12` |
 | 5. 验证 | 已完成 | 目标测试 13/13 通过，完整 `npm test` 66/66 通过 |
 
@@ -114,6 +114,6 @@
 | 2. 自动治理脚本 | 已完成 | 新增 `pk:govern`，支持孵化转正、推荐池退回、强重复拒绝 |
 | 3. 服务端打回 API | 已完成 | `pk:serve` 新增 `POST /api/governance/reject` |
 | 4. 图谱页面入口 | 已完成 | 详情抽屉新增治理状态和“打回孵化”按钮 |
-| 5. 插件同步 | 已完成 | 新增 `pk:pk-govern` skill，插件版本提升到 `0.1.14` |
+| 5. 插件同步 | 已完成 | 新增 `pk-govern` skill，插件版本提升到 `0.1.14` |
 | 6. 验证 | 已完成 | 本轮目标测试 34/34 通过，完整 `npm test` 75/75 通过 |
 

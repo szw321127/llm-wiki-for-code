@@ -23,7 +23,7 @@
 
 ## 2026-04-28
 
-- 已新增 `pk:auto-crystallize` / `pk:pk-auto-crystallize` 自动结晶入口。
+- 已新增 `pk:auto-crystallize` / `pk-auto-crystallize` 自动结晶入口。
 - 自动结晶会在命中已有 practice 时把推荐 option 记为 adopted；未命中 practice 但存在 touched files 时，会创建孵化 practice 和候选 option。
 - 已补充自动结晶测试，并把完整测试套件扩展到 57 个用例。
 - 已将 pk 插件版本提升到 `0.1.5` 并重新执行 `npm run codex:install`。
@@ -50,12 +50,12 @@
 
 - 已补齐知识生命周期治理：孵化节点达到 3 次采纳阈值后会在图数据中标记为 `promotion_candidate`，并记录 `adopted-threshold-met` 原因。
 - 已补齐推荐池淘汰提示：每个 practice 在每个项目视角下最多保留 3 个推荐 option，排位外 option 写入 `evicted_option_ids` 供治理使用。
-- 已扩展 `pk:pk-lint`：新增 `incubating-promotion-candidate`、`recommendation-pool-eviction-candidate`、`possible-duplicate-node` 三类只读治理 issue。
+- 已扩展 `pk-lint`：新增 `incubating-promotion-candidate`、`recommendation-pool-eviction-candidate`、`possible-duplicate-node` 三类只读治理 issue。
 - 已将根脚本同步到 `plugins/pk/scripts/`，更新 README、根 `SKILL.md`、`pk-lint` skill 和插件 manifest。
 - 已把 pk 插件版本更新到 `0.1.12` 并重新执行 `npm run codex:install`。
 - 验证结果：目标测试 13/13 通过，完整 `npm test` 66/66 通过。
 - 已新增自动治理设计与实施计划：`docs/plans/2026-04-30-auto-governance-design.md`、`docs/plans/2026-04-30-auto-governance-implementation.md`。
-- 已新增 `pk:govern` / `pk:pk-govern`：自动把达到阈值且未打回的孵化节点转正，把推荐池排位外方案退回孵化区，把强重复节点标记为 `duplicate_of` 并打回。
+- 已新增 `pk:govern` / `pk-govern`：自动把达到阈值且未打回的孵化节点转正，把推荐池排位外方案退回孵化区，把强重复节点标记为 `duplicate_of` 并打回。
 - 已增强 `pk:serve`：新增 `POST /api/governance/reject`，图谱页可以通过本地服务把节点打回孵化区。
 - 已增强图谱详情抽屉：展示治理状态，并为非项目画像节点提供“打回孵化”按钮。
 - 已调整 lint：`review_status: rejected` 节点不再反复出现在转正和重复治理候选中。

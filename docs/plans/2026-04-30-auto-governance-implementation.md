@@ -73,7 +73,7 @@
 - Test: `tests/plugin-command-shell.test.mjs`
 
 **Steps:**
-1. 加 `pk:govern` npm script 和 `pk:pk-govern` skill。
+1. 加 `pk:govern` npm script 和 `pk-govern` skill。
 2. 更新 manifest 版本。
 3. 同步插件脚本副本。
 4. 跑完整 `npm test`。

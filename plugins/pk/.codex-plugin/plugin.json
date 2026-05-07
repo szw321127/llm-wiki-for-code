@@ -15,7 +15,7 @@
   "interface": {
     "displayName": "PK",
     "shortDescription": "Project knowledge skills",
-    "longDescription": "Expose the pk:pk-init, pk:pk-preflight, pk:pk-status, pk:pk-graph, pk:pk-crystallize, pk:pk-auto-crystallize, pk:pk-lint, pk:pk-govern, and pk:pk-serve skills for the local project knowledge workflow.",
+    "longDescription": "Expose the pk-init, pk-preflight, pk-status, pk-graph, pk-crystallize, pk-auto-crystallize, pk-lint, pk-govern, and pk-serve skills for the local project knowledge workflow.",
     "developerName": "hugo",
     "category": "Productivity",
     "capabilities": [
@@ -24,13 +24,13 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use the `pk:pk-init` skill to initialize `.project-knowledge/` for the current project.",
-      "Use the `pk:pk-preflight` skill before implementation to retrieve matching practices or local evidence hints.",
-      "Use the `pk:pk-status` skill to summarize the current project knowledge state.",
-      "Use the `pk:pk-crystallize` skill to persist stable knowledge from the current session.",
-      "Use the `pk:pk-auto-crystallize` skill after task completion to infer adopted practices or incubating candidates from the task and touched files.",
-      "Use the `pk:pk-lint` skill to inspect recommendation-pool lifecycle governance, evidence health, and possible duplicates.",
-      "Use the `pk:pk-govern` skill to automatically apply reversible project knowledge governance actions."
+      "Use the `pk-init` skill to initialize `.project-knowledge/` for the current project.",
+      "Use the `pk-preflight` skill before implementation to retrieve matching practices or local evidence hints.",
+      "Use the `pk-status` skill to summarize the current project knowledge state.",
+      "Use the `pk-crystallize` skill to persist stable knowledge from the current session.",
+      "Use the `pk-auto-crystallize` skill after task completion to infer adopted practices or incubating candidates from the task and touched files.",
+      "Use the `pk-lint` skill to inspect recommendation-pool lifecycle governance, evidence health, and possible duplicates.",
+      "Use the `pk-govern` skill to automatically apply reversible project knowledge governance actions."
     ],
     "brandColor": "#0F766E"
   }

@@ -5,7 +5,7 @@ description: Use when the user wants to automatically apply reversible project k
 
 # PK Govern
 
-Treat this skill as the write-capable maintenance step after `pk:pk-lint`.
+Treat this skill as the write-capable maintenance step after `pk-lint`.
 
 ## Required Behavior
 

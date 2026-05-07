@@ -43,12 +43,12 @@ test("repository docs expose pk as a skill-based workflow", () => {
   const rootSkill = fs.readFileSync(rootSkillPath, "utf8");
 
   assert.doesNotMatch(readme, /\/pk:/);
-  assert.match(readme, /pk:pk-init/);
-  assert.match(readme, /pk:pk-status/);
+  assert.match(readme, /pk-init/);
+  assert.match(readme, /pk-status/);
 
   assert.doesNotMatch(rootSkill, /\/pk:/);
-  assert.match(rootSkill, /pk:pk-init/);
-  assert.match(rootSkill, /pk:pk-graph/);
+  assert.match(rootSkill, /pk-init/);
+  assert.match(rootSkill, /pk-graph/);
 });
 
 test("pk plugin manifest exposes skill-bundle metadata", () => {
@@ -62,13 +62,13 @@ test("pk plugin manifest exposes skill-bundle metadata", () => {
   assert.doesNotMatch(pluginManifest.interface.shortDescription, /command shell/i);
   assert.doesNotMatch(pluginManifest.interface.longDescription, /\/pk:/);
   assert.deepEqual(pluginManifest.interface.defaultPrompt, [
-    "Use the `pk:pk-init` skill to initialize `.project-knowledge/` for the current project.",
-    "Use the `pk:pk-preflight` skill before implementation to retrieve matching practices or local evidence hints.",
-    "Use the `pk:pk-status` skill to summarize the current project knowledge state.",
-    "Use the `pk:pk-crystallize` skill to persist stable knowledge from the current session.",
-    "Use the `pk:pk-auto-crystallize` skill after task completion to infer adopted practices or incubating candidates from the task and touched files.",
-    "Use the `pk:pk-lint` skill to inspect recommendation-pool lifecycle governance, evidence health, and possible duplicates.",
-    "Use the `pk:pk-govern` skill to automatically apply reversible project knowledge governance actions."
+    "Use the `pk-init` skill to initialize `.project-knowledge/` for the current project.",
+    "Use the `pk-preflight` skill before implementation to retrieve matching practices or local evidence hints.",
+    "Use the `pk-status` skill to summarize the current project knowledge state.",
+    "Use the `pk-crystallize` skill to persist stable knowledge from the current session.",
+    "Use the `pk-auto-crystallize` skill after task completion to infer adopted practices or incubating candidates from the task and touched files.",
+    "Use the `pk-lint` skill to inspect recommendation-pool lifecycle governance, evidence health, and possible duplicates.",
+    "Use the `pk-govern` skill to automatically apply reversible project knowledge governance actions."
   ]);
 });
 
@@ -136,6 +136,6 @@ test("pk init wrapper stays runnable after copying the plugin into a cache-style
     "utf8"
   );
   assert.doesNotMatch(workflow, /\/pk:/);
-  assert.match(workflow, /pk:pk-status/);
-  assert.match(workflow, /pk:pk-graph/);
+  assert.match(workflow, /pk-status/);
+  assert.match(workflow, /pk-graph/);
 });
