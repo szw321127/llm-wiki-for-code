@@ -12,7 +12,7 @@ What real Codex, Claude Code, or AI coding workflow is blocked or awkward today?
 
 ## Desired behavior
 
-What should Project Knowledge do differently?
+What should LLM Wiki for Code do differently?
 
 ## Example
 

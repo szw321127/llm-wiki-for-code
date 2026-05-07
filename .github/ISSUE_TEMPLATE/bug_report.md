@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Report a problem with Project Knowledge
+about: Report a problem with LLM Wiki for Code
 title: "[Bug]: "
 labels: bug
 assignees: ""
@@ -23,7 +23,7 @@ npm run pk:preflight -- <project-root> "task description"
 - OS:
 - Node version:
 - Client: Codex / Claude Code / plain CLI
-- Project Knowledge version or commit:
+- LLM Wiki for Code version or commit:
 
 ## Relevant output
 

@@ -22,7 +22,7 @@ test("repository exposes a local Codex marketplace for the pk plugin", () => {
   const marketplace = JSON.parse(fs.readFileSync(marketplacePath, "utf8"));
 
   assert.equal(marketplace.name, "local-project-knowledge");
-  assert.equal(marketplace.interface.displayName, "Local Project Knowledge");
+  assert.equal(marketplace.interface.displayName, "LLM Wiki for Code");
   assert.equal(Array.isArray(marketplace.plugins), true);
 
   const pkPlugin = marketplace.plugins.find((plugin) => plugin.name === "pk");

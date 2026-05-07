@@ -1,6 +1,6 @@
 # Contributing
 
-Project Knowledge is a local-first tool for coding-agent project memory. Contributions are most useful when they improve real Codex, Claude Code, or long-running repository workflows.
+LLM Wiki for Code is a local-first tool for coding-agent project memory. Contributions are most useful when they improve real Codex, Claude Code, or long-running repository workflows.
 
 ## Good First Contributions
 

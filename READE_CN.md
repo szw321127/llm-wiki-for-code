@@ -1,13 +1,13 @@
-# Project Knowledge
+# LLM Wiki for Code
 
-面向 Codex 与 Claude Code 的持久项目记忆层。
+面向 Codex 与 Claude Code 的持久代码库 wiki。
 
-Project Knowledge 是一套本地项目知识沉淀和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续 AI 对话可以先查已有约定，再决定是否扫描项目代码。
+LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续 AI 编码对话可以先查已有约定，再决定是否扫描项目代码。
 
 [![Tests](https://img.shields.io/badge/tests-node%20test-0f766e)](#验证)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-当前 `package.json` 中的 npm 包名是 `llm-wiki-for-code`，面向用户的工具和插件名称是 Project Knowledge / `pk`。
+仓库名和包名是 `llm-wiki-for-code`。助手插件保留短名 `pk`。
 
 英文文档：[README.md](README.md)。
 
@@ -35,9 +35,9 @@ npm run pk:serve -- <project-root> 8124
 
 ## 为什么不只用 `AGENTS.md` 或 `CLAUDE.md`？
 
-`AGENTS.md` 和 `CLAUDE.md` 很适合保存当前指令。Project Knowledge 则是它们旁边的结构化记忆层：
+`AGENTS.md` 和 `CLAUDE.md` 很适合保存当前指令。LLM Wiki for Code 则是它们旁边的结构化记忆层：
 
-| 需求 | 指令文件 | Project Knowledge |
+| 需求 | 指令文件 | LLM Wiki for Code |
 | --- | --- | --- |
 | 告诉 agent 当前规则 | 支持 | 支持 |
 | 记录候选实践和替代方案 | 手动维护 | 内置 |
@@ -46,7 +46,7 @@ npm run pk:serve -- <project-root> 8124
 | 控制推荐池大小并治理 | 不支持 | 内置 |
 | 用 Obsidian vault 或图谱浏览关系 | 不支持 | 内置 |
 
-指令文件适合保存当前操作规则。Project Knowledge 适合保存会随时间演进的实践、方案、证据和决策。
+指令文件适合保存当前操作规则。LLM Wiki for Code 适合保存会随时间演进的实践、方案、证据和决策。
 
 ## 解决的问题
 
@@ -58,7 +58,7 @@ npm run pk:serve -- <project-root> 8124
 - 知识库变大后，如果整库塞进上下文，会浪费 token。
 - 临时计划、worktree 文件和生成文档容易污染长期证据。
 
-Project Knowledge 的做法是：
+LLM Wiki for Code 的做法是：
 
 - 任务开始前用 `pk-preflight` 查询已有实践和推荐方案。
 - 任务结束后用 `pk-auto-crystallize` 记录已采纳或待孵化知识。

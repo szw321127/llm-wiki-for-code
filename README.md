@@ -1,13 +1,13 @@
-# Project Knowledge
+# LLM Wiki for Code
 
-Persistent project memory for Codex and Claude Code.
+Persistent codebase wiki for Codex and Claude Code.
 
-Project Knowledge is a local knowledge-base and knowledge-graph workflow that stores durable project practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory. Later AI sessions can check existing conventions before scanning the same code again.
+LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durable codebase practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory. Later AI coding sessions can check existing conventions before scanning the same code again.
 
 [![Tests](https://img.shields.io/badge/tests-node%20test-0f766e)](#verification)
 [![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-The npm package name is currently `llm-wiki-for-code`, while the user-facing tool and plugin are named Project Knowledge / `pk`.
+The repository and package name are `llm-wiki-for-code`. The assistant plugin keeps the short name `pk`.
 
 Chinese documentation: [READE_CN.md](READE_CN.md).
 
@@ -35,9 +35,9 @@ What happens:
 
 ## Why Not Just `AGENTS.md` or `CLAUDE.md`?
 
-`AGENTS.md` and `CLAUDE.md` are good instruction files. Project Knowledge is a structured memory layer beside them:
+`AGENTS.md` and `CLAUDE.md` are good instruction files. LLM Wiki for Code is a structured memory layer beside them:
 
-| Need | Instruction file | Project Knowledge |
+| Need | Instruction file | LLM Wiki for Code |
 | --- | --- | --- |
 | Tell an agent current rules | Yes | Yes |
 | Track candidate practices and alternatives | Manual | Built in |
@@ -46,7 +46,7 @@ What happens:
 | Keep recommendation pools small and governed | No | Built in |
 | Browse relationships as an Obsidian vault or graph | No | Built in |
 
-Use instruction files for current operating rules. Use Project Knowledge for practices, options, evidence, and decisions that should evolve over time.
+Use instruction files for current operating rules. Use LLM Wiki for Code for practices, options, evidence, and decisions that should evolve over time.
 
 ## What It Solves
 
@@ -58,7 +58,7 @@ Long-running AI-assisted projects often accumulate repeated context work:
 - Large knowledge stores waste context if they are pasted wholesale into the model.
 - Temporary plans, worktree files, and generated docs can pollute long-term evidence.
 
-Project Knowledge addresses this by:
+LLM Wiki for Code addresses this by:
 
 - Running `pk-preflight` before a task to retrieve matching practices and recommendations.
 - Running `pk-auto-crystallize` after a task to record adopted or incubating knowledge.
@@ -109,7 +109,7 @@ These paths are intentionally excluded as long-term evidence:
 
 The reason is that these files are often plans, collaboration artifacts, generated output, local tool state, or documents that may be cleaned up later. They can help the current session, but they should not justify long-term project recommendations.
 
-Project Knowledge also avoids storing complete code snippets as primary evidence. Preferred evidence is:
+LLM Wiki for Code also avoids storing complete code snippets as primary evidence. Preferred evidence is:
 
 - Stable source-relative paths
 - Practice summaries

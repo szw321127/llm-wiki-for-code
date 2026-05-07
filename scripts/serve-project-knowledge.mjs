@@ -105,7 +105,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(currentFil
   const server = createProjectKnowledgeServer(projectRoot);
   server.listen(port, "127.0.0.1", () => {
     console.log(
-      `Project knowledge preview: http://127.0.0.1:${port}/graph/knowledge-graph.html`
+      `LLM Wiki for Code preview: http://127.0.0.1:${port}/graph/knowledge-graph.html`
     );
   });
 }
