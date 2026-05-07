@@ -257,7 +257,7 @@ async function ensureKnowledgeSkeleton(knowledgeRoot) {
 async function writeCoreDocuments(knowledgeRoot, scan) {
   await fs.writeFile(
     path.join(knowledgeRoot, "README.md"),
-    `# ${scan.title} 项目知识库\n\n该目录由 project-knowledge-skill 为当前项目生成，用于沉淀项目实践、方案、规则和会话结晶。\n\n可直接双击 \`open-graph.cmd\` 启动本地图谱预览。\n`,
+    `# ${scan.title} 代码库 wiki\n\n该目录由 LLM Wiki for Code 为当前项目生成，用于沉淀项目实践、方案、规则和会话结晶。\n\n可直接双击 \`open-graph.cmd\` 启动本地图谱预览。\n`,
     "utf8"
   );
   await fs.writeFile(
@@ -437,7 +437,7 @@ async function writeOpenGraphLauncher(knowledgeRoot) {
     "  echo Node.js was not found on PATH. Install Node.js or add node.exe to PATH.",
     "  exit /b 1",
     ")",
-    'start "Project Knowledge Graph Server" powershell -NoExit -ExecutionPolicy Bypass -Command "& { & \\"%NODE_EXE%\\" \\"%SERVE_SCRIPT%\\" \\"%PROJECT_ROOT%\\" \\"%PORT%\\" }"',
+    'start "LLM Wiki for Code Graph Server" powershell -NoExit -ExecutionPolicy Bypass -Command "& { & \\"%NODE_EXE%\\" \\"%SERVE_SCRIPT%\\" \\"%PROJECT_ROOT%\\" \\"%PORT%\\" }"',
     "timeout /t 2 /nobreak >nul",
     'start "" "http://127.0.0.1:%PORT%/graph/knowledge-graph.html"',
     ""

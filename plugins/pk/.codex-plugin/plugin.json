@@ -1,7 +1,7 @@
 {
   "name": "pk",
   "version": "0.1.16",
-  "description": "Project knowledge skills for Codex.",
+  "description": "LLM Wiki for Code skills for Codex.",
   "author": {
     "name": "hugo"
   },
@@ -14,8 +14,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "PK",
-    "shortDescription": "Project knowledge skills",
-    "longDescription": "Expose the pk-init, pk-preflight, pk-status, pk-graph, pk-crystallize, pk-auto-crystallize, pk-lint, pk-govern, and pk-serve skills for the local project knowledge workflow.",
+    "shortDescription": "LLM Wiki for Code skills",
+    "longDescription": "Expose the pk-init, pk-preflight, pk-status, pk-graph, pk-crystallize, pk-auto-crystallize, pk-lint, pk-govern, and pk-serve skills for the local LLM Wiki for Code workflow.",
     "developerName": "hugo",
     "category": "Productivity",
     "capabilities": [

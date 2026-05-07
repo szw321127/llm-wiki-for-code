@@ -1,10 +1,52 @@
-# Project Knowledge
+# LLM Wiki for Code
 
-Project Knowledge is a local knowledge-base and knowledge-graph workflow for Codex and Claude Code. It stores durable project practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory so later AI sessions can check existing conventions before scanning the same code again.
+Persistent codebase wiki for Codex and Claude Code.
 
-The npm package name is currently `llm-wiki-for-code`, while the user-facing tool and plugin are named Project Knowledge / `pk`.
+LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durable codebase practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory. Later AI coding sessions can check existing conventions before scanning the same code again.
 
-Chinese documentation: [READE_CN.md](READE_CN.md)
+[![Tests](https://img.shields.io/badge/tests-node%20test-0f766e)](#verification)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+The repository and package name are `llm-wiki-for-code`. The assistant plugin keeps the short name `pk`.
+
+Chinese documentation: [READE_CN.md](READE_CN.md).
+
+## 30-Second Tour
+
+```bash
+npm run pk:init -- <project-root>
+npm run pk:preflight -- <project-root> "implement HTTP calls"
+npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
+npm run pk:serve -- <project-root> 8124
+```
+
+What happens:
+
+- `pk-init` creates `.project-knowledge/` as a Markdown knowledge base.
+- `pk-preflight` returns matching practices, recommendation pools, and evidence previews before an AI coding task starts.
+- `pk-auto-crystallize` records the session and infers adopted or incubating knowledge after the task ends.
+- `pk-serve` opens a local graph for practices, options, rules, contexts, constraints, sessions, and source evidence.
+
+## Who It Is For
+
+- Developers using Codex, Claude Code, or similar coding agents across long-running repositories.
+- Teams that want agent decisions to become reviewable project knowledge instead of disappearing into chat history.
+- Maintainers who prefer local Markdown, explicit evidence, and reversible governance over opaque memory stores.
+
+## Why Not Just `AGENTS.md` or `CLAUDE.md`?
+
+`AGENTS.md` and `CLAUDE.md` are good instruction files. LLM Wiki for Code is a structured memory layer beside them:
+
+| Need | Instruction file | LLM Wiki for Code |
+| --- | --- | --- |
+| Tell an agent current rules | Yes | Yes |
+| Track candidate practices and alternatives | Manual | Built in |
+| Link recommendations to stable source evidence | Manual | Built in |
+| Record adoption history across sessions | No | Built in |
+| Keep recommendation pools small and governed | No | Built in |
+| Browse relationships as an Obsidian vault or graph | No | Built in |
+
+Use instruction files for current operating rules. Use LLM Wiki for Code for practices, options, evidence, and decisions that should evolve over time.
 
 ## What It Solves
 
@@ -16,7 +58,7 @@ Long-running AI-assisted projects often accumulate repeated context work:
 - Large knowledge stores waste context if they are pasted wholesale into the model.
 - Temporary plans, worktree files, and generated docs can pollute long-term evidence.
 
-Project Knowledge addresses this by:
+LLM Wiki for Code addresses this by:
 
 - Running `pk-preflight` before a task to retrieve matching practices and recommendations.
 - Running `pk-auto-crystallize` after a task to record adopted or incubating knowledge.
@@ -67,7 +109,7 @@ These paths are intentionally excluded as long-term evidence:
 
 The reason is that these files are often plans, collaboration artifacts, generated output, local tool state, or documents that may be cleaned up later. They can help the current session, but they should not justify long-term project recommendations.
 
-Project Knowledge also avoids storing complete code snippets as primary evidence. Preferred evidence is:
+LLM Wiki for Code also avoids storing complete code snippets as primary evidence. Preferred evidence is:
 
 - Stable source-relative paths
 - Practice summaries
@@ -418,6 +460,7 @@ Knowledge node files include `Links` sections with `[[node-id]]` references betw
 ```text
 .
 |-- .agents/                       # Local Codex marketplace metadata
+|-- .github/                       # GitHub issue and pull request templates
 |-- .claude-plugin/                # Claude Code marketplace metadata
 |-- assets/                        # Project graph frontend assets
 |-- docs/                          # Design and implementation plans
@@ -432,6 +475,7 @@ Knowledge node files include `Links` sections with `[[node-id]]` references betw
 |-- seed/                          # Baseline knowledge used during initialization
 |-- templates/                     # Markdown and JSON templates
 |-- tests/                         # Node test suite
+|-- CONTRIBUTING.md                # Contribution guide
 |-- SKILL.md                       # Root skill definition
 |-- README.md                      # English documentation
 `-- READE_CN.md                    # Chinese documentation
@@ -445,11 +489,7 @@ Run the full test suite:
 npm test
 ```
 
-The current tests cover initialization, preflight context budgeting, crystallization, auto-crystallization, evidence filtering, recommendation-pool governance, Obsidian output, graph generation, graph runtime behavior, plugin command shells, Codex local plugin installation, and publish-content sanitization.
-
-## Release Check
-
-The repository includes `tests/content-sanitization.test.mjs` to prevent local absolute paths, user names, and unrelated project residue from entering publishable content.
+The current tests cover initialization, preflight context budgeting, crystallization, auto-crystallization, evidence filtering, recommendation-pool governance, Obsidian output, graph generation, graph runtime behavior, plugin command shells, and Codex local plugin installation.
 
 Before publishing:
 

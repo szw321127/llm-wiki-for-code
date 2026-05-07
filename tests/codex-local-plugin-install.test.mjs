@@ -79,7 +79,7 @@ test("upsertHomeMarketplace replaces an existing pk entry in place of stale conf
   const existing = {
     name: "local-project-knowledge",
     interface: {
-      displayName: "Local Project Knowledge"
+      displayName: "LLM Wiki for Code"
     },
     plugins: [
       {
@@ -133,7 +133,7 @@ test("removePluginFromMarketplace keeps unrelated plugins and drops empty payloa
   const removedAll = removePluginFromMarketplace({
     name: "local-project-knowledge",
     interface: {
-      displayName: "Local Project Knowledge"
+      displayName: "LLM Wiki for Code"
     },
     plugins: [buildInstalledByDefaultEntry()]
   });

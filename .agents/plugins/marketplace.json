@@ -1,7 +1,7 @@
 {
   "name": "local-project-knowledge",
   "interface": {
-    "displayName": "Local Project Knowledge"
+    "displayName": "LLM Wiki for Code"
   },
   "plugins": [
     {

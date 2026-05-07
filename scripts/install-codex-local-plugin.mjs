@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HOME_MARKETPLACE_NAME = "local-project-knowledge";
-const HOME_MARKETPLACE_DISPLAY_NAME = "Local Project Knowledge";
+const HOME_MARKETPLACE_DISPLAY_NAME = "LLM Wiki for Code";
 const HOME_PLUGIN_NAME = "pk";
 
 export function resolveCodexHomeLocalPaths({

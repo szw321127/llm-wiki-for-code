@@ -1,7 +1,7 @@
 {
   "name": "pk",
   "version": "0.1.16",
-  "description": "Project knowledge skills for Claude Code.",
+  "description": "LLM Wiki for Code skills for Claude Code.",
   "author": {
     "name": "hugo"
   },

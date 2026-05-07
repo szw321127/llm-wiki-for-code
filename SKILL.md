@@ -1,9 +1,9 @@
 ---
-name: project-knowledge-skill
+name: llm-wiki-for-code
 description: Build and maintain a project-serving knowledge base inside the current project's `.project-knowledge/` directory. Use when Codex should initialize a project knowledge base, inspect current project knowledge status, rebuild the project knowledge graph, or crystallize stable knowledge from the current task into project-local Markdown.
 ---
 
-# Project Knowledge Skill
+# LLM Wiki for Code Skill
 
 Treat `.project-knowledge/` as the only fact source for a project's persisted knowledge.
 
