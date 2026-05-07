@@ -4,12 +4,15 @@ Persistent codebase wiki for Codex and Claude Code.
 
 LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durable codebase practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory. Later AI coding sessions can check existing conventions before scanning the same code again.
 
-[![Tests](https://img.shields.io/badge/tests-node%20test-0f766e)](#verification)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+<p align="center">
+  <a href="#verification"><img src="https://img.shields.io/badge/tests-node%20test-0f766e" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
+</p>
+<p align="center">
+  <a href="README.md">中文文档</a> | English
+</p>
 
 The repository and package name are `llm-wiki-for-code`. The assistant plugin keeps the short name `pk`.
-
-[中文文档](README.md)
 
 ## 30-Second Tour
 

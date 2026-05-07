@@ -4,12 +4,15 @@
 
 LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续 AI 编码对话可以先查已有约定，再决定是否扫描项目代码。
 
-[![Tests](https://img.shields.io/badge/tests-node%20test-0f766e)](#验证)
-[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+<p align="center">
+  <a href="#验证"><img src="https://img.shields.io/badge/tests-node%20test-0f766e" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
+</p>
+<p align="center">
+  中文文档 | <a href="README_EN.md">English</a>
+</p>
 
 仓库名和包名是 `llm-wiki-for-code`。助手插件保留短名 `pk`。
-
-[英文文档](README_EN.md)
 
 ## 30 秒看懂
 
