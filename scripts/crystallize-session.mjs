@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildProjectGraphArtifacts } from "./build-project-graph-data.mjs";
-import { normalizeEvidencePaths } from "./evidence-paths.mjs";
+import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
 import { parseFrontmatterBlock } from "./knowledge-lib.mjs";
 import {
   buildObsidianLinkSection,
@@ -15,6 +15,7 @@ import {
 
 export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {}) {
   const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
+  const evidencePolicy = await loadEvidencePolicy(knowledgeRoot);
   const writeSession = input.writeSession !== false;
   const incubatingNodes = input.incubatingNodes || [];
   const stableUpdates = input.stableUpdates || [];
@@ -34,7 +35,7 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
   }
 
   if (writeSession) {
-    await writeSessionDocument(knowledgeRoot, sessionId, input);
+    await writeSessionDocument(knowledgeRoot, sessionId, input, evidencePolicy);
   }
 
   if (incubatingNodes.length > 0) {
@@ -44,13 +45,13 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
         maturity: "incubating",
         status: node.status || "active",
         session_refs: dedupeValues([...(node.session_refs || []), sessionId])
-      });
+      }, evidencePolicy);
     }
   }
 
   if (stableUpdates.length > 0) {
     for (const update of stableUpdates) {
-      await applyStableUpdate(knowledgeRoot, update, sessionId);
+      await applyStableUpdate(knowledgeRoot, update, sessionId, evidencePolicy);
     }
   }
 
@@ -187,8 +188,8 @@ function buildSessionId(topic) {
   return `session-${date}-${slug || "session"}`;
 }
 
-async function writeSessionDocument(knowledgeRoot, sessionId, input) {
-  const touchedFiles = normalizeEvidencePaths(input.touchedFiles || []);
+async function writeSessionDocument(knowledgeRoot, sessionId, input, evidencePolicy) {
+  const touchedFiles = normalizeEvidencePaths(input.touchedFiles || [], evidencePolicy);
   const sessionPath = path.join(knowledgeRoot, "sessions", `${sessionId}.md`);
   const frontmatter = {
     id: sessionId,
@@ -225,10 +226,10 @@ function buildCrystallizationLine(input) {
   return "本轮仅记录 session，没有新增知识节点。";
 }
 
-async function writeKnowledgeNode(knowledgeRoot, node) {
+async function writeKnowledgeNode(knowledgeRoot, node, evidencePolicy) {
   const normalizedNode = {
     ...node,
-    source_evidence: normalizeEvidencePaths(node.source_evidence || [])
+    source_evidence: normalizeEvidencePaths(node.source_evidence || [], evidencePolicy)
   };
   const nodePath = resolveNodePath(knowledgeRoot, normalizedNode);
   const body = buildNodeBody(normalizedNode);
@@ -236,7 +237,7 @@ async function writeKnowledgeNode(knowledgeRoot, node) {
   await fs.writeFile(nodePath, renderMarkdownDocument(normalizedNode, body), "utf8");
 }
 
-async function applyStableUpdate(knowledgeRoot, update, sessionId) {
+async function applyStableUpdate(knowledgeRoot, update, sessionId, evidencePolicy) {
   const nodePath = await findExistingNodePath(knowledgeRoot, update.id, update.type);
   const source = await fs.readFile(nodePath, "utf8");
   const { data, body } = parseFrontmatterBlock(source);
@@ -249,7 +250,10 @@ async function applyStableUpdate(knowledgeRoot, update, sessionId) {
     title: update.title || data.title,
     summary: update.summary || data.summary || "",
     session_refs: dedupeValues([...(data.session_refs || []), ...(update.session_refs || []), sessionId]),
-    source_evidence: normalizeEvidencePaths([...(data.source_evidence || []), ...(update.source_evidence || [])])
+    source_evidence: normalizeEvidencePaths(
+      [...(data.source_evidence || []), ...(update.source_evidence || [])],
+      evidencePolicy
+    )
   };
 
   if (update.summary) {

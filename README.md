@@ -88,28 +88,36 @@ LLM Wiki for Code 的做法是：
 
 ## 证据规则
 
-`source_evidence` 只应该指向长期存在的项目源码相对路径，例如：
+`source_evidence` 应指向长期存在的项目相对路径，例如：
 
 ```text
 src/api/client.ts
 src/runtime/scheduler.ts
 ```
 
-这些路径不会作为长期证据：
+默认策略会过滤常见的临时文件、工具状态、生成物和过程文档；它不是写死在 README 里的完整清单。每个知识库都可以通过 `.project-knowledge/evidence-policy.json` 调整：
 
-- `.worktrees/`
-- `.project-knowledge/`
-- `.agents/`
-- `.codex/`
-- `node_modules/`
-- `docs/`
-- `task_plan.md`
-- `findings.md`
-- `progress.md`
+```json
+{
+  "useDefaultIgnores": true,
+  "ignoredPrefixes": ["generated/"],
+  "ignoredBasenames": ["local-note.md"],
+  "allowedPrefixes": ["docs/adr/"],
+  "allowAbsolutePaths": false
+}
+```
 
-原因是这些内容通常是计划、协作过程文件、生成物、本地工具状态，或后续可能被清理的文档。它们可以帮助当前对话理解上下文，但不能支撑长期推荐实践。
+字段含义：
 
-项目也不把完整代码片段作为主证据保存。推荐的证据形态是：
+- `useDefaultIgnores`：是否启用内置默认过滤规则。
+- `ignoredPrefixes`：追加按路径前缀过滤的目录或文件。
+- `ignoredBasenames`：追加按文件名过滤的临时文件。
+- `allowedPrefixes`：从默认过滤规则中放行稳定子路径，例如 `docs/adr/`。
+- `allowAbsolutePaths`：默认禁止绝对路径，避免把本机路径写进项目知识。
+
+这些规则会同时影响 `pk-preflight` 的 evidence 预览、`pk-auto-crystallize` 的 touched files、`pk-crystallize` 写入的 `source_evidence`，以及 `pk-lint` 的 volatile evidence 检查。
+
+项目不把完整代码片段作为主证据保存。推荐的证据形态是：
 
 - 稳定源码相对路径
 - 实践摘要

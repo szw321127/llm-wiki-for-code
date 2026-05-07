@@ -139,6 +139,32 @@ test("lintProjectKnowledge reports volatile source evidence paths", async () => 
   ]);
 });
 
+test("lintProjectKnowledge applies project evidence policy overrides", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-evidence-policy-"));
+  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
+  await writeEvidencePolicy(knowledgeRoot, {
+    ignoredPrefixes: ["generated/"],
+    ignoredBasenames: ["local-note.md"],
+    allowedPrefixes: ["docs/adr/"]
+  });
+  await writePolicyEvidenceOption(knowledgeRoot);
+
+  const report = await lintProjectKnowledge(knowledgeRoot);
+  const issue = report.issues.find(
+    (candidate) =>
+      candidate.code === "node-volatile-evidence" &&
+      candidate.node_id === "option-policy-evidence"
+  );
+
+  assert.ok(issue);
+  assert.deepEqual(issue.volatile_source_evidence, [
+    "docs/tmp.md",
+    "generated/client.ts",
+    "src/runtime/local-note.md"
+  ]);
+});
+
 async function writeOptionWithoutPractice(knowledgeRoot) {
   await fs.writeFile(
     path.join(knowledgeRoot, "options", "option-orphan.md"),
@@ -168,6 +194,14 @@ session_refs: []
 
 没有关联 practice 的方案。
 `,
+    "utf8"
+  );
+}
+
+async function writeEvidencePolicy(knowledgeRoot, policy) {
+  await fs.writeFile(
+    path.join(knowledgeRoot, "evidence-policy.json"),
+    `${JSON.stringify(policy, null, 2)}\n`,
     "utf8"
   );
 }
@@ -207,6 +241,44 @@ session_refs: []
 ## Summary
 
 包含临时证据路径的方案。
+`,
+    "utf8"
+  );
+}
+
+async function writePolicyEvidenceOption(knowledgeRoot) {
+  await fs.writeFile(
+    path.join(knowledgeRoot, "options", "option-policy-evidence.md"),
+    `---
+id: option-policy-evidence
+type: option
+title: 可配置证据方案
+summary: 包含项目级证据策略覆盖的方案。
+practice: practice-http-client
+base_score: 55
+score_breakdown:
+  consistency: 11
+  efficiency: 11
+  maintainability: 11
+  extensibility: 11
+  risk: 11
+constraints: []
+alternatives: []
+keywords: [http, request]
+status: active
+maturity: stable
+source_evidence:
+  - docs/adr/http-client.md
+  - docs/tmp.md
+  - generated/client.ts
+  - src/runtime/local-note.md
+  - src/api/client.ts
+session_refs: []
+---
+
+## Summary
+
+包含项目级证据策略覆盖的方案。
 `,
     "utf8"
   );

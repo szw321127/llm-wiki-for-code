@@ -114,6 +114,56 @@ test("runPreflight excludes docs evidence from knowledge hits and scan hints", a
   );
 });
 
+test("runPreflight applies project evidence policy to evidence previews and scan hints", async () => {
+  const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-evidence-policy-"));
+  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+
+  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+    recursive: true
+  });
+  await fs.writeFile(
+    path.join(knowledgeRoot, "evidence-policy.json"),
+    `${JSON.stringify(
+      {
+        ignoredPrefixes: ["generated/"],
+        allowedPrefixes: ["docs/adr/"]
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  const practicePath = path.join(knowledgeRoot, "practices", "practice-http-client.md");
+  await fs.writeFile(
+    practicePath,
+    (await fs.readFile(practicePath, "utf8")).replace(
+      "source_evidence: [src/api/client.ts, docs/engineering.md]",
+      "source_evidence: [docs/adr/http-client.md, docs/tmp.md, generated/client.ts, src/api/client.ts]"
+    ),
+    "utf8"
+  );
+
+  const hit = await runPreflight(projectRoot, "实现 HTTP 请求");
+
+  assert.deepEqual(hit.matchedPractices[0].source_evidence, [
+    "docs/adr/http-client.md",
+    "src/api/client.ts"
+  ]);
+
+  await fs.mkdir(path.join(projectRoot, "docs", "adr"), { recursive: true });
+  await fs.writeFile(path.join(projectRoot, "docs", "adr", "http-client.md"), "# HTTP ADR\n", "utf8");
+  await fs.mkdir(path.join(projectRoot, "generated"), { recursive: true });
+  await fs.writeFile(path.join(projectRoot, "generated", "client.ts"), "export const generated = true;\n", "utf8");
+  const miss = await runPreflight(projectRoot, "完全未知的新能力");
+
+  assert.ok(miss.evidenceHints.some((hint) => hint.path === "docs/adr/http-client.md"));
+  assert.equal(
+    miss.evidenceHints.some((hint) => String(hint.path).startsWith("generated/")),
+    false
+  );
+});
+
 test("runPreflight scans local project files for evidence hints when knowledge has no match", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-"));
   await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), path.join(projectRoot, ".project-knowledge"), {

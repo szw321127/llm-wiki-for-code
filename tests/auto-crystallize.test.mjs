@@ -232,6 +232,67 @@ test("autoCrystallizeSession avoids incubating knowledge when only volatile file
   assert.doesNotMatch(session, /docs\/|\.worktrees|task_plan\.md|findings\.md|progress\.md/);
 });
 
+test("autoCrystallizeSession applies project evidence policy to touched files and evidence", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-evidence-policy-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+  await fs.writeFile(
+    path.join(knowledgeRoot, "evidence-policy.json"),
+    `${JSON.stringify(
+      {
+        ignoredPrefixes: ["generated/"],
+        allowedPrefixes: ["docs/adr/"]
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  const result = await autoCrystallizeSession(projectRoot, {
+    sessionId: "session-2026-04-28-auto-evidence-policy",
+    title: "可配置证据规则",
+    topic: "configurable-evidence-policy",
+    taskText: "configurable evidence policy",
+    decisionSummary: "本轮形成可配置证据规则的候选做法。",
+    touchedFiles: [
+      "docs/adr/evidence-policy.md",
+      "docs/tmp.md",
+      "generated/client.ts",
+      "src/runtime/evidencePolicy.ts"
+    ]
+  });
+
+  assert.equal(result.mode, "session+incubating");
+  assert.deepEqual(result.auto.touchedFiles, [
+    "docs/adr/evidence-policy.md",
+    "src/runtime/evidencePolicy.ts"
+  ]);
+
+  const session = await fs.readFile(
+    path.join(knowledgeRoot, "sessions", "session-2026-04-28-auto-evidence-policy.md"),
+    "utf8"
+  );
+  const option = await fs.readFile(
+    path.join(
+      knowledgeRoot,
+      "incubating",
+      "options",
+      "option-configurable-evidence-policy-candidate.md"
+    ),
+    "utf8"
+  );
+
+  assert.match(session, /docs\/adr\/evidence-policy\.md/);
+  assert.match(session, /src\/runtime\/evidencePolicy\.ts/);
+  assert.doesNotMatch(session, /docs\/tmp|generated\/client/);
+  assert.match(option, /docs\/adr\/evidence-policy\.md/);
+  assert.match(option, /src\/runtime\/evidencePolicy\.ts/);
+  assert.doesNotMatch(option, /docs\/tmp|generated\/client/);
+});
+
 test("autoCrystallizeSession generalizes long-running scheduler knowledge beyond business nouns", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-generalized-"));
   const projectRoot = path.join(tempRoot, "sample-project");

@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildProjectGraphFromDirectory } from "./knowledge-lib.mjs";
-import { normalizeEvidencePaths } from "./evidence-paths.mjs";
+import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
 import { scanProject } from "./scan-project.mjs";
 
 const CHINESE_MATCH_PHRASES = [
@@ -53,6 +53,7 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
   }
 
   const graph = await buildProjectGraphFromDirectory(resolved.knowledgeRoot);
+  const evidencePolicy = await loadEvidencePolicy(resolved.knowledgeRoot);
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
   const viewId =
     graph.project_views.find((view) => !view.synthetic)?.id ||
@@ -64,10 +65,16 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
     .filter((match) => match.score > 0)
     .sort((left, right) => right.score - left.score || left.node.title.localeCompare(right.node.title, "zh-Hans-CN"))
     .slice(0, limits.maxMatchedPractices)
-    .map((match) => summarizePractice(match.node, viewId, limits));
+    .map((match) => summarizePractice(match.node, viewId, limits, evidencePolicy));
 
   if (matchedPractices.length > 0) {
-    const recommendedOptions = collectRecommendedOptions(matchedPractices, nodeMap, viewId, limits);
+    const recommendedOptions = collectRecommendedOptions(
+      matchedPractices,
+      nodeMap,
+      viewId,
+      limits,
+      evidencePolicy
+    );
     const evidenceHintResult = collectEvidenceHintsFromNodes(
       [...matchedPractices, ...recommendedOptions],
       limits
@@ -88,7 +95,7 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
   }
 
   const scan = await scanProject(resolved.projectRoot);
-  const evidenceHintResult = collectEvidenceHintsFromScan(scan, limits);
+  const evidenceHintResult = collectEvidenceHintsFromScan(scan, limits, evidencePolicy);
   return {
     mode: "needs-project-scan",
     projectRoot: resolved.projectRoot,
@@ -203,8 +210,8 @@ function dedupeValues(values) {
   return Array.from(new Set((values || []).filter(Boolean)));
 }
 
-function summarizePractice(node, viewId, limits) {
-  const evidence = summarizeEvidence(node.source_evidence || [], limits);
+function summarizePractice(node, viewId, limits, evidencePolicy) {
+  const evidence = summarizeEvidence(node.source_evidence || [], limits, evidencePolicy);
   return {
     id: node.id,
     title: node.title,
@@ -219,7 +226,7 @@ function summarizePractice(node, viewId, limits) {
   };
 }
 
-function collectRecommendedOptions(practices, nodeMap, viewId, limits) {
+function collectRecommendedOptions(practices, nodeMap, viewId, limits, evidencePolicy) {
   const options = [];
   const seen = new Set();
 
@@ -234,15 +241,15 @@ function collectRecommendedOptions(practices, nodeMap, viewId, limits) {
         continue;
       }
       seen.add(optionId);
-      options.push(summarizeOption(option, viewId, practice.id, limits));
+      options.push(summarizeOption(option, viewId, practice.id, limits, evidencePolicy));
     }
   }
 
   return options;
 }
 
-function summarizeOption(node, viewId, practiceId, limits) {
-  const evidence = summarizeEvidence(node.source_evidence || [], limits);
+function summarizeOption(node, viewId, practiceId, limits, evidencePolicy) {
+  const evidence = summarizeEvidence(node.source_evidence || [], limits, evidencePolicy);
   return {
     id: node.id,
     title: node.title,
@@ -259,8 +266,8 @@ function summarizeOption(node, viewId, practiceId, limits) {
   };
 }
 
-function summarizeEvidence(sourceEvidence, limits) {
-  const values = normalizeEvidencePaths(sourceEvidence || []);
+function summarizeEvidence(sourceEvidence, limits, evidencePolicy) {
+  const values = normalizeEvidencePaths(sourceEvidence || [], evidencePolicy);
   const preview = values.slice(0, limits.maxEvidencePerNode);
   return {
     preview,
@@ -300,15 +307,21 @@ function collectEvidenceHintsFromNodes(nodes, limits) {
   };
 }
 
-function collectEvidenceHintsFromScan(scan, limits) {
+function collectEvidenceHintsFromScan(scan, limits, evidencePolicy) {
+  const docEvidenceFiles = dedupeValues([
+    ...(scan.docEntrypoints || []),
+    ...(scan.markdownFiles || []).filter((filePath) =>
+      isAllowedByEvidencePolicy(filePath, evidencePolicy)
+    )
+  ]);
   const hintGroups = [
-    ["unified-client", scan.unifiedClientFiles],
-    ["direct-call", scan.directCallFiles],
-    ["config-module", scan.configModuleFiles],
-    ["inline-config", scan.inlineConfigFiles],
-    ["logger", scan.loggerFiles],
-    ["frontend-page", scan.frontendPageFiles],
-    ["doc", scan.docEntrypoints]
+    ["unified-client", normalizeEvidencePaths(scan.unifiedClientFiles, evidencePolicy)],
+    ["direct-call", normalizeEvidencePaths(scan.directCallFiles, evidencePolicy)],
+    ["config-module", normalizeEvidencePaths(scan.configModuleFiles, evidencePolicy)],
+    ["inline-config", normalizeEvidencePaths(scan.inlineConfigFiles, evidencePolicy)],
+    ["logger", normalizeEvidencePaths(scan.loggerFiles, evidencePolicy)],
+    ["frontend-page", normalizeEvidencePaths(scan.frontendPageFiles, evidencePolicy)],
+    ["doc", normalizeEvidencePaths(docEvidenceFiles, evidencePolicy)]
   ];
   const hints = [];
   let totalCount = 0;
@@ -329,6 +342,22 @@ function collectEvidenceHintsFromScan(scan, limits) {
     totalCount,
     truncated: totalCount > hints.length
   };
+}
+
+function isAllowedByEvidencePolicy(filePath, evidencePolicy) {
+  const comparablePath = normalizeEvidencePaths([filePath], {
+    useDefaultIgnores: false,
+    ignoredPrefixes: [],
+    ignoredBasenames: []
+  })[0]?.toLowerCase();
+
+  if (!comparablePath) {
+    return false;
+  }
+
+  return (evidencePolicy.allowedPrefixes || []).some((prefix) =>
+    comparablePath === prefix || comparablePath.startsWith(`${prefix}/`)
+  );
 }
 
 async function exists(filePath) {

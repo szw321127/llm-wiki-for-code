@@ -88,28 +88,36 @@ Knowledge lifecycle:
 
 ## Evidence Rules
 
-`source_evidence` should point only to stable project source paths, for example:
+`source_evidence` should point to stable project-relative paths, for example:
 
 ```text
 src/api/client.ts
 src/runtime/scheduler.ts
 ```
 
-These paths are intentionally excluded as long-term evidence:
+The default policy filters common temporary files, local tool state, generated output, and process documents. The README is not the complete hardcoded rule list. Each knowledge base can tune the policy with `.project-knowledge/evidence-policy.json`:
 
-- `.worktrees/`
-- `.project-knowledge/`
-- `.agents/`
-- `.codex/`
-- `node_modules/`
-- `docs/`
-- `task_plan.md`
-- `findings.md`
-- `progress.md`
+```json
+{
+  "useDefaultIgnores": true,
+  "ignoredPrefixes": ["generated/"],
+  "ignoredBasenames": ["local-note.md"],
+  "allowedPrefixes": ["docs/adr/"],
+  "allowAbsolutePaths": false
+}
+```
 
-The reason is that these files are often plans, collaboration artifacts, generated output, local tool state, or documents that may be cleaned up later. They can help the current session, but they should not justify long-term project recommendations.
+Fields:
 
-LLM Wiki for Code also avoids storing complete code snippets as primary evidence. Preferred evidence is:
+- `useDefaultIgnores`: enables the built-in default filters.
+- `ignoredPrefixes`: adds path prefixes to filter.
+- `ignoredBasenames`: adds temporary filenames to filter.
+- `allowedPrefixes`: allows stable subpaths that would otherwise match a default filter, such as `docs/adr/`.
+- `allowAbsolutePaths`: keeps absolute local paths out of project knowledge by default.
+
+The policy affects evidence previews in `pk-preflight`, touched files in `pk-auto-crystallize`, `source_evidence` written by `pk-crystallize`, and volatile evidence checks in `pk-lint`.
+
+LLM Wiki for Code avoids storing complete code snippets as primary evidence. Preferred evidence is:
 
 - Stable source-relative paths
 - Practice summaries
