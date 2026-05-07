@@ -4,7 +4,7 @@ LLM Wiki for Code is a local-first tool for coding-agent project memory. Contrib
 
 ## Good First Contributions
 
-- Improve the README or `READE_CN.md` with clearer examples.
+- Improve `README.md` or `README_EN.md` with clearer examples.
 - Add a small sample project under `tests/fixtures/` or a documented demo under `docs/`.
 - Improve error messages in `scripts/`.
 - Add tests around evidence filtering, recommendation-pool behavior, or plugin wrappers.

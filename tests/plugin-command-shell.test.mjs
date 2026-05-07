@@ -12,6 +12,7 @@ const pluginRoot = path.join(root, "plugins", "pk");
 const pluginManifestPath = path.join(pluginRoot, ".codex-plugin", "plugin.json");
 const pluginManifest = JSON.parse(fs.readFileSync(pluginManifestPath, "utf8"));
 const readmePath = path.join(root, "README.md");
+const englishReadmePath = path.join(root, "README_EN.md");
 const rootSkillPath = path.join(root, "SKILL.md");
 const commandDirectory = path.join(pluginRoot, "commands");
 const skillsDirectory = path.join(pluginRoot, "skills");
@@ -40,11 +41,15 @@ test("repository exposes a local Codex marketplace for the pk plugin", () => {
 
 test("repository docs expose pk as a skill-based workflow", () => {
   const readme = fs.readFileSync(readmePath, "utf8");
+  const englishReadme = fs.readFileSync(englishReadmePath, "utf8");
   const rootSkill = fs.readFileSync(rootSkillPath, "utf8");
 
   assert.doesNotMatch(readme, /\/pk:/);
   assert.match(readme, /pk-init/);
   assert.match(readme, /pk-status/);
+  assert.match(readme, /\[英文文档\]\(README_EN\.md\)/);
+  assert.match(englishReadme, /\[中文文档\]\(README\.md\)/);
+  assert.match(englishReadme, /pk-init/);
 
   assert.doesNotMatch(rootSkill, /\/pk:/);
   assert.match(rootSkill, /pk-init/);
