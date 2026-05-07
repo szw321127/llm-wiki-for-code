@@ -1,10 +1,52 @@
 # Project Knowledge
 
-Project Knowledge 是一套面向 Codex 与 Claude Code 的项目知识沉淀和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续 AI 对话可以先查已有约定，再决定是否扫描项目代码。
+面向 Codex 与 Claude Code 的持久项目记忆层。
+
+Project Knowledge 是一套本地项目知识沉淀和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续 AI 对话可以先查已有约定，再决定是否扫描项目代码。
+
+[![Tests](https://img.shields.io/badge/tests-node%20test-0f766e)](#验证)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 当前 `package.json` 中的 npm 包名是 `llm-wiki-for-code`，面向用户的工具和插件名称是 Project Knowledge / `pk`。
 
-英文文档：[README.md](README.md)
+英文文档：[README.md](README.md)。
+
+## 30 秒看懂
+
+```bash
+npm run pk:init -- <project-root>
+npm run pk:preflight -- <project-root> "实现 HTTP 调用"
+npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
+npm run pk:serve -- <project-root> 8124
+```
+
+执行后：
+
+- `pk-init` 创建 `.project-knowledge/`，作为 Markdown 知识库。
+- `pk-preflight` 在 AI 编码任务开始前返回匹配实践、推荐池和 evidence 预览。
+- `pk-auto-crystallize` 在任务结束后记录 session，并推断已采纳或待孵化知识。
+- `pk-serve` 打开本地图谱，查看 practice、option、rule、context、constraint、session 和 source evidence。
+
+## 适合谁
+
+- 在长期代码仓库中使用 Codex、Claude Code 或类似 coding agent 的开发者。
+- 希望把 agent 决策沉淀为可审查项目知识，而不是留在聊天记录里的团队。
+- 偏好本地 Markdown、显式 evidence 和可逆治理，而不是黑盒记忆存储的维护者。
+
+## 为什么不只用 `AGENTS.md` 或 `CLAUDE.md`？
+
+`AGENTS.md` 和 `CLAUDE.md` 很适合保存当前指令。Project Knowledge 则是它们旁边的结构化记忆层：
+
+| 需求 | 指令文件 | Project Knowledge |
+| --- | --- | --- |
+| 告诉 agent 当前规则 | 支持 | 支持 |
+| 记录候选实践和替代方案 | 手动维护 | 内置 |
+| 把推荐方案关联到稳定源码 evidence | 手动维护 | 内置 |
+| 跨 session 记录采纳历史 | 不支持 | 内置 |
+| 控制推荐池大小并治理 | 不支持 | 内置 |
+| 用 Obsidian vault 或图谱浏览关系 | 不支持 | 内置 |
+
+指令文件适合保存当前操作规则。Project Knowledge 适合保存会随时间演进的实践、方案、证据和决策。
 
 ## 解决的问题
 
@@ -418,6 +460,7 @@ npm run pk:serve -- <project-root> 8124
 ```text
 .
 |-- .agents/                       # Codex 本地 marketplace 元数据
+|-- .github/                       # GitHub issue 和 PR 模板
 |-- .claude-plugin/                # Claude Code marketplace 元数据
 |-- assets/                        # 项目图谱前端资产
 |-- docs/                          # 设计和实现计划
@@ -432,6 +475,7 @@ npm run pk:serve -- <project-root> 8124
 |-- seed/                          # 初始化基线知识
 |-- templates/                     # Markdown 和 JSON 模板
 |-- tests/                         # Node 测试套件
+|-- CONTRIBUTING.md                # 贡献指南
 |-- SKILL.md                       # 根 skill 说明
 |-- README.md                      # 英文文档
 `-- READE_CN.md                    # 中文文档
@@ -445,11 +489,7 @@ npm run pk:serve -- <project-root> 8124
 npm test
 ```
 
-当前测试覆盖初始化、预检上下文预算、结晶、自动结晶、证据过滤、推荐池治理、Obsidian 输出、图谱生成、图谱运行时行为、插件命令外壳、Codex 本地插件安装，以及发布内容净化。
-
-## 发布前检查
-
-仓库包含 `tests/content-sanitization.test.mjs`，用于阻止本地绝对路径、用户名和无关项目残留进入可发布内容。
+当前测试覆盖初始化、预检上下文预算、结晶、自动结晶、证据过滤、推荐池治理、Obsidian 输出、图谱生成、图谱运行时行为、插件命令外壳，以及 Codex 本地插件安装。
 
 发布前建议执行：
 
