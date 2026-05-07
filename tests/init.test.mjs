@@ -66,6 +66,7 @@ test("initializeProjectKnowledge bootstraps .project-knowledge from local code a
   );
   const launcherPath = path.join(knowledgeRoot, "open-graph.cmd");
   const launcherToolPath = path.join(knowledgeRoot, "tools", "serve-project-knowledge.mjs");
+  const evidencePolicy = JSON.parse(await fs.readFile(path.join(knowledgeRoot, "evidence-policy.json"), "utf8"));
   const obsidianIndex = await fs.readFile(path.join(knowledgeRoot, "index.md"), "utf8");
   const obsidianLog = await fs.readFile(path.join(knowledgeRoot, "log.md"), "utf8");
   const practiceView = await fs.readFile(path.join(knowledgeRoot, "_views", "practices.md"), "utf8");
@@ -102,6 +103,11 @@ test("initializeProjectKnowledge bootstraps .project-knowledge from local code a
   assert.match(obsidianLog, /pk:init/);
   assert.match(practiceView, /\[\[practice-http-client\]\]/);
   assert.match(practiceView, /\[\[option-unified-client\]\]/);
+  assert.equal(evidencePolicy.useDefaultIgnores, true);
+  assert.deepEqual(evidencePolicy.ignoredPrefixes, []);
+  assert.deepEqual(evidencePolicy.ignoredBasenames, []);
+  assert.deepEqual(evidencePolicy.allowedPrefixes, []);
+  assert.equal(evidencePolicy.allowAbsolutePaths, false);
   assert.equal(await fileExists(launcherPath), true);
   assert.equal(await fileExists(launcherToolPath), true);
 

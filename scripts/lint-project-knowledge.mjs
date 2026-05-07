@@ -4,17 +4,18 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { collectVolatileEvidencePaths } from "./evidence-paths.mjs";
+import { collectVolatileEvidencePaths, loadEvidencePolicy } from "./evidence-paths.mjs";
 import { buildProjectGraphFromDirectory, LIFECYCLE_POLICY } from "./knowledge-lib.mjs";
 
 export async function lintProjectKnowledge(projectRootOrKnowledgeRoot = process.cwd()) {
   const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
+  const evidencePolicy = await loadEvidencePolicy(knowledgeRoot);
   const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
   const recommendationPools = collectRecommendationPools(graph);
   const issues = [
     ...findMissingEvidenceIssues(graph.nodes),
-    ...findVolatileEvidenceIssues(graph.nodes),
+    ...findVolatileEvidenceIssues(graph.nodes, evidencePolicy),
     ...findMissingPracticeIssues(graph.nodes, nodeMap),
     ...findEmptyRecommendationPoolIssues(graph.nodes),
     ...findPromotionCandidateIssues(graph.nodes),
@@ -86,11 +87,11 @@ function findMissingEvidenceIssues(nodes) {
     }));
 }
 
-function findVolatileEvidenceIssues(nodes) {
+function findVolatileEvidenceIssues(nodes, evidencePolicy) {
   return nodes
     .map((node) => ({
       node,
-      volatileSourceEvidence: collectVolatileEvidencePaths(node.source_evidence || [])
+      volatileSourceEvidence: collectVolatileEvidencePaths(node.source_evidence || [], evidencePolicy)
     }))
     .filter(({ volatileSourceEvidence }) => volatileSourceEvidence.length > 0)
     .map(({ node, volatileSourceEvidence }) => ({

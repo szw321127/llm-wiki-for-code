@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 
 import { crystallizeSession } from "./crystallize-session.mjs";
-import { normalizeEvidencePaths } from "./evidence-paths.mjs";
+import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
 import { runPreflight } from "./preflight-session.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -19,7 +19,8 @@ export async function autoCrystallizeSession(projectRootOrKnowledgeRoot, input =
   }
 
   const taskText = buildTaskText(input);
-  const touchedFiles = await resolveTouchedFiles(target.projectRoot, input);
+  const evidencePolicy = await loadEvidencePolicy(target.knowledgeRoot);
+  const touchedFiles = await resolveTouchedFiles(target.projectRoot, input, evidencePolicy);
   const preflight = await runPreflight(target.projectRoot, taskText);
   const adoptedNodeIds = Array.isArray(input.adoptedNodeIds)
     ? dedupeValues(input.adoptedNodeIds)
@@ -156,12 +157,12 @@ function buildTaskText(input) {
     .trim();
 }
 
-async function resolveTouchedFiles(projectRoot, input) {
+async function resolveTouchedFiles(projectRoot, input, evidencePolicy) {
   if (Array.isArray(input.touchedFiles) && input.touchedFiles.length > 0) {
-    return normalizeTouchedFiles(input.touchedFiles);
+    return normalizeTouchedFiles(input.touchedFiles, evidencePolicy);
   }
 
-  return normalizeTouchedFiles(await collectGitTouchedFiles(projectRoot));
+  return normalizeTouchedFiles(await collectGitTouchedFiles(projectRoot), evidencePolicy);
 }
 
 async function collectGitTouchedFiles(projectRoot) {
@@ -204,8 +205,8 @@ function unquoteGitPath(filePath) {
   return value;
 }
 
-function normalizeTouchedFiles(files) {
-  return normalizeEvidencePaths(files);
+function normalizeTouchedFiles(files, evidencePolicy) {
+  return normalizeEvidencePaths(files, evidencePolicy);
 }
 
 function inferAdoptedNodeIds(preflight) {

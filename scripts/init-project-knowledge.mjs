@@ -34,6 +34,7 @@ export async function initializeProjectKnowledge(projectRoot) {
   });
   await writePortablePreviewServer(knowledgeRoot);
   await writeStateFiles(knowledgeRoot);
+  await writeEvidencePolicy(knowledgeRoot);
 
   const graphArtifacts = await buildProjectGraphArtifacts(knowledgeRoot);
   await refreshObsidianVault(knowledgeRoot, {
@@ -393,6 +394,22 @@ function buildNodeBody(node) {
   }
 
   return sections;
+}
+
+async function writeEvidencePolicy(knowledgeRoot) {
+  const policy = {
+    useDefaultIgnores: true,
+    ignoredPrefixes: [],
+    ignoredBasenames: [],
+    allowedPrefixes: [],
+    allowAbsolutePaths: false
+  };
+
+  await fs.writeFile(
+    path.join(knowledgeRoot, "evidence-policy.json"),
+    `${JSON.stringify(policy, null, 2)}\n`,
+    "utf8"
+  );
 }
 
 async function writeStateFiles(knowledgeRoot) {
