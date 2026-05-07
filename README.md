@@ -138,7 +138,7 @@ pk-govern
 pk-serve
 ```
 
-After updating this repository, run the installer again:
+After updating this repository, run the installer again and fully restart Codex. Local installs may point `~/plugins/pk` at this repository, but the running client can still use startup/plugin cache data until it is restarted:
 
 ```bash
 npm run codex:install
@@ -182,7 +182,7 @@ pk-govern
 pk-serve
 ```
 
-Update:
+Update this plugin after changing or pulling this repository, then fully restart Claude Code. Claude Code installs the plugin into `.claude/plugins/cache/...`, so repository changes are not reflected in an already installed plugin until it is updated:
 
 ```bash
 /plugin update pk@local-project-knowledge

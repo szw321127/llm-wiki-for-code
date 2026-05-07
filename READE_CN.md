@@ -138,7 +138,7 @@ pk-govern
 pk-serve
 ```
 
-升级当前仓库后，可以重新执行：
+升级当前仓库后，重新执行安装命令并完全重启 Codex。本地安装可能会让 `~/plugins/pk` 指向当前仓库，但运行中的客户端仍可能使用启动时读取的 plugin 缓存：
 
 ```bash
 npm run codex:install
@@ -182,7 +182,7 @@ pk-govern
 pk-serve
 ```
 
-升级：
+修改或拉取当前仓库后，更新这个插件并完全重启 Claude Code。Claude Code 会把插件复制到 `.claude/plugins/cache/...`，所以已经安装的插件不会自动反映仓库里的新改动：
 
 ```bash
 /plugin update pk@local-project-knowledge
