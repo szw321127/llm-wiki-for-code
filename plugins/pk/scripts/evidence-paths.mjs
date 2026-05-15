@@ -25,6 +25,20 @@ const DEFAULT_IGNORED_EVIDENCE_BASENAMES = [
   "agents.md"
 ];
 
+const DEFAULT_WALK_IGNORED_DIRECTORIES = new Set([
+  ".git",
+  ".agents",
+  ".claude",
+  ".codex",
+  ".cursor",
+  ".project-knowledge",
+  ".worktrees",
+  "node_modules",
+  "dist",
+  "build",
+  "coverage"
+]);
+
 export const EVIDENCE_POLICY_FILE = "evidence-policy.json";
 
 export const DEFAULT_EVIDENCE_POLICY = Object.freeze({
@@ -66,7 +80,7 @@ export function buildEvidencePolicy(overrides = {}) {
 }
 
 export function normalizeEvidencePath(filePath) {
-  return String(filePath || "")
+  return String(resolveEvidencePath(filePath) || "")
     .trim()
     .replace(/\\/g, "/")
     .replace(/^\.\/+/, "");
@@ -83,6 +97,33 @@ export function normalizeEvidencePaths(filePaths, policyOverrides = {}) {
   );
 }
 
+export function normalizeEvidenceRecords(evidenceValues, policyOverrides = {}) {
+  const policy = buildEvidencePolicy(policyOverrides);
+  const records = [];
+  const seen = new Set();
+
+  for (const value of asArray(evidenceValues)) {
+    const pathValue = normalizeEvidencePath(value);
+    if (!pathValue || isVolatileEvidencePath(pathValue, policy) || seen.has(pathValue)) {
+      continue;
+    }
+    seen.add(pathValue);
+
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      records.push({
+        path: pathValue,
+        ...Object.fromEntries(
+          Object.entries(value)
+            .filter(([key]) => key !== "path")
+            .filter(([, nestedValue]) => nestedValue !== undefined && nestedValue !== null && nestedValue !== "")
+        )
+      });
+    }
+  }
+
+  return records;
+}
+
 export function collectVolatileEvidencePaths(filePaths, policyOverrides = {}) {
   const policy = buildEvidencePolicy(policyOverrides);
 
@@ -92,6 +133,54 @@ export function collectVolatileEvidencePaths(filePaths, policyOverrides = {}) {
       .filter(Boolean)
       .filter((filePath) => isVolatileEvidencePath(filePath, policy))
   );
+}
+
+export async function filterExistingEvidencePaths(projectRoot, filePaths, policyOverrides = {}) {
+  const inspection = await inspectEvidencePaths(projectRoot, filePaths, policyOverrides);
+  return inspection.existingSourceEvidence;
+}
+
+export async function inspectEvidencePaths(projectRoot, filePaths, policyOverrides = {}, options = {}) {
+  const policy = buildEvidencePolicy(policyOverrides);
+  const normalizedPaths = normalizeEvidencePaths(filePaths, policy);
+  const projectFiles = options.projectFiles || await listProjectEvidenceFiles(projectRoot, policy);
+  const projectFileSet = new Set(projectFiles);
+  const existingSourceEvidence = [];
+  const missingSourceEvidence = [];
+
+  for (const evidencePath of normalizedPaths) {
+    if (await evidencePathExists(projectRoot, evidencePath, projectFileSet)) {
+      existingSourceEvidence.push(evidencePath);
+    } else {
+      missingSourceEvidence.push(evidencePath);
+    }
+  }
+
+  return {
+    existingSourceEvidence,
+    missingSourceEvidence,
+    repairCandidates: collectRepairCandidates(missingSourceEvidence, projectFiles)
+  };
+}
+
+export async function listProjectEvidenceFiles(projectRoot, policyOverrides = {}) {
+  const policy = buildEvidencePolicy(policyOverrides);
+  const resolvedRoot = path.resolve(projectRoot || process.cwd());
+  const files = await walkProjectFiles(resolvedRoot);
+
+  return files
+    .map((filePath) => path.relative(resolvedRoot, filePath).replace(/\\/g, "/"))
+    .map((filePath) => normalizeEvidencePath(filePath))
+    .filter(Boolean)
+    .filter((filePath) => !isVolatileEvidencePath(filePath, policy))
+    .sort();
+}
+
+function resolveEvidencePath(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return value.path;
+  }
+  return value;
 }
 
 export function isVolatileEvidencePath(filePath, policyOverrides = {}) {
@@ -152,6 +241,83 @@ function pathMatchesPolicyPrefix(comparablePath, prefix) {
 
 function isAbsolutePath(filePath) {
   return /^[a-z]:\//i.test(filePath) || filePath.startsWith("/") || filePath.startsWith("//");
+}
+
+async function evidencePathExists(projectRoot, evidencePath, projectFileSet) {
+  if (isAbsolutePath(evidencePath)) {
+    return exists(path.normalize(evidencePath));
+  }
+
+  if (projectFileSet) {
+    return projectFileSet.has(evidencePath);
+  }
+
+  return exists(path.join(projectRoot, evidencePath));
+}
+
+function collectRepairCandidates(missingSourceEvidence, projectFiles) {
+  const candidates = {};
+
+  for (const missingPath of missingSourceEvidence) {
+    const basename = path.posix.basename(missingPath).toLowerCase();
+    const matches = projectFiles
+      .filter((filePath) => path.posix.basename(filePath).toLowerCase() === basename)
+      .sort((left, right) => compareRepairCandidate(left, right, missingPath))
+      .slice(0, 3);
+
+    if (matches.length > 0) {
+      candidates[missingPath] = matches;
+    }
+  }
+
+  return candidates;
+}
+
+function compareRepairCandidate(left, right, missingPath) {
+  return scoreRepairCandidate(right, missingPath) - scoreRepairCandidate(left, missingPath) ||
+    left.localeCompare(right);
+}
+
+function scoreRepairCandidate(candidatePath, missingPath) {
+  const missingParts = missingPath.toLowerCase().split("/");
+  const candidateParts = candidatePath.toLowerCase().split("/");
+  const sharedParts = candidateParts.filter((part) => missingParts.includes(part)).length;
+  const sameExtension = path.posix.extname(candidatePath) === path.posix.extname(missingPath) ? 1 : 0;
+  return sharedParts * 2 + sameExtension;
+}
+
+async function walkProjectFiles(rootDirectory) {
+  const files = [];
+  const stack = [rootDirectory];
+
+  while (stack.length > 0) {
+    const currentDirectory = stack.pop();
+    let entries = [];
+    try {
+      entries = await fs.readdir(currentDirectory, { withFileTypes: true });
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        continue;
+      }
+      throw error;
+    }
+
+    for (const entry of entries) {
+      const absolutePath = path.join(currentDirectory, entry.name);
+      if (entry.isDirectory()) {
+        if (!DEFAULT_WALK_IGNORED_DIRECTORIES.has(entry.name.toLowerCase())) {
+          stack.push(absolutePath);
+        }
+        continue;
+      }
+
+      if (entry.isFile()) {
+        files.push(absolutePath);
+      }
+    }
+  }
+
+  return files;
 }
 
 function asArray(value) {

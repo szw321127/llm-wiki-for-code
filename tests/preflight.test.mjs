@@ -32,6 +32,101 @@ test("runPreflight returns matched practices and recommendation pool for task ke
   );
 });
 
+test("runPreflight records hits only when explicitly enabled", async () => {
+  const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-hit-usage-"));
+  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+
+  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+    recursive: true
+  });
+  const before = await readUsageIndex(knowledgeRoot);
+
+  await runPreflight(projectRoot, "页面里需要实现 http request client");
+  const afterDefault = await readUsageIndex(knowledgeRoot);
+
+  assert.equal(afterDefault["practice-http-client"]?.preflight_hits || 0, 0);
+  assert.equal(afterDefault["option-unified-client"]?.preflight_hits || 0, 0);
+
+  const recorded = await runPreflight(projectRoot, "页面里需要实现 http request client", {
+    recordHits: true,
+    now: "2026-05-15T00:00:00.000Z"
+  });
+  const afterRecorded = await readUsageIndex(knowledgeRoot);
+
+  assert.equal(recorded.mode, "knowledge-hit");
+  assert.equal(afterRecorded["practice-http-client"].preflight_hits, 1);
+  assert.equal(afterRecorded["practice-http-client"].last_hit_at, "2026-05-15");
+  assert.equal(afterRecorded["option-unified-client"].preflight_hits, 1);
+  assert.equal(afterRecorded["option-unified-client"].adopted_count, before["option-unified-client"].adopted_count);
+  assert.equal(afterRecorded["option-unified-client"].last_hit_at, "2026-05-15");
+  assert.equal(afterRecorded["option-direct-call"].preflight_hits, 1);
+  assert.equal(afterRecorded["option-direct-call"].last_hit_at, "2026-05-15");
+});
+
+test("runPreflight matches practices through applies_when task intent", async () => {
+  const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-intent-match-"));
+  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+
+  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+    recursive: true
+  });
+  await writeIntentPractice(knowledgeRoot, {
+    practiceId: "practice-frontend-crud-intent",
+    optionId: "option-frontend-crud-intent",
+    appliesWhen: {
+      task_kinds: ["frontend-page", "crud-list"],
+      technologies: ["vue"],
+      path_prefixes: ["src/views"]
+    }
+  });
+
+  const result = await runPreflight(
+    projectRoot,
+    "新增 Vue 页面 src/views/users/UserList.vue，实现用户列表增删改查"
+  );
+  const matchedPractice = result.matchedPractices.find(
+    (practice) => practice.id === "practice-frontend-crud-intent"
+  );
+
+  assert.equal(result.mode, "knowledge-hit");
+  assert.ok(matchedPractice);
+  assert.ok(matchedPractice.matchReasons.includes("task-kind:frontend-page"));
+  assert.ok(matchedPractice.matchReasons.includes("task-kind:crud-list"));
+  assert.ok(matchedPractice.matchReasons.includes("technology:vue"));
+  assert.ok(matchedPractice.matchReasons.includes("path-prefix:src/views"));
+});
+
+test("runPreflight excludes practices through does_not_apply_when task intent", async () => {
+  const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-intent-exclude-"));
+  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+
+  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+    recursive: true
+  });
+  await writeIntentPractice(knowledgeRoot, {
+    practiceId: "practice-http-client-excluded-for-tests",
+    optionId: "option-http-client-excluded-for-tests",
+    keywords: ["http"],
+    appliesWhen: {
+      task_kinds: ["api-client"]
+    },
+    doesNotApplyWhen: {
+      task_kinds: ["test"],
+      path_prefixes: ["tests"]
+    }
+  });
+
+  const result = await runPreflight(
+    projectRoot,
+    "为 tests/api/http-client.test.ts 增加 HTTP client 单元测试"
+  );
+
+  assert.equal(
+    result.matchedPractices.some((practice) => practice.id === "practice-http-client-excluded-for-tests"),
+    false
+  );
+});
+
 test("runPreflight keeps knowledge-hit output within a small context budget", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-budget-"));
   const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
@@ -48,6 +143,7 @@ test("runPreflight keeps knowledge-hit output within a small context budget", as
     const evidence = Array.from({ length: 8 }, (_, evidenceIndex) =>
       `src/cache/${index}/evidence-${evidenceIndex + 1}.ts`
     );
+    await writeEvidenceFiles(projectRoot, evidence);
 
     await fs.writeFile(
       path.join(knowledgeRoot, "practices", `${practiceId}.md`),
@@ -86,6 +182,7 @@ test("runPreflight excludes docs evidence from knowledge hits and scan hints", a
   await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
     recursive: true
   });
+  await writeEvidenceFiles(projectRoot, ["src/api/client.ts"]);
   const practicePath = path.join(knowledgeRoot, "practices", "practice-http-client.md");
   await fs.writeFile(
     practicePath,
@@ -121,6 +218,7 @@ test("runPreflight applies project evidence policy to evidence previews and scan
   await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
     recursive: true
   });
+  await writeEvidenceFiles(projectRoot, ["docs/adr/http-client.md", "src/api/client.ts"]);
   await fs.writeFile(
     path.join(knowledgeRoot, "evidence-policy.json"),
     `${JSON.stringify(
@@ -151,8 +249,6 @@ test("runPreflight applies project evidence policy to evidence previews and scan
     "src/api/client.ts"
   ]);
 
-  await fs.mkdir(path.join(projectRoot, "docs", "adr"), { recursive: true });
-  await fs.writeFile(path.join(projectRoot, "docs", "adr", "http-client.md"), "# HTTP ADR\n", "utf8");
   await fs.mkdir(path.join(projectRoot, "generated"), { recursive: true });
   await fs.writeFile(path.join(projectRoot, "generated", "client.ts"), "export const generated = true;\n", "utf8");
   const miss = await runPreflight(projectRoot, "完全未知的新能力");
@@ -160,6 +256,36 @@ test("runPreflight applies project evidence policy to evidence previews and scan
   assert.ok(miss.evidenceHints.some((hint) => hint.path === "docs/adr/http-client.md"));
   assert.equal(
     miss.evidenceHints.some((hint) => String(hint.path).startsWith("generated/")),
+    false
+  );
+});
+
+test("runPreflight excludes missing evidence paths from knowledge hints", async () => {
+  const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-missing-evidence-"));
+  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+
+  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+    recursive: true
+  });
+  await fs.mkdir(path.join(projectRoot, "src", "api"), { recursive: true });
+  await fs.writeFile(path.join(projectRoot, "src", "api", "client.ts"), "export const client = true;\n", "utf8");
+
+  const practicePath = path.join(knowledgeRoot, "practices", "practice-http-client.md");
+  await fs.writeFile(
+    practicePath,
+    (await fs.readFile(practicePath, "utf8")).replace(
+      "source_evidence: [src/api/client.ts, docs/engineering.md]",
+      "source_evidence: [src/moved/client.ts, src/api/client.ts]"
+    ),
+    "utf8"
+  );
+
+  const result = await runPreflight(projectRoot, "实现 HTTP 请求");
+
+  assert.equal(result.mode, "knowledge-hit");
+  assert.deepEqual(result.matchedPractices[0].source_evidence, ["src/api/client.ts"]);
+  assert.equal(
+    result.evidenceHints.some((hint) => hint.path === "src/moved/client.ts"),
     false
   );
 });
@@ -275,4 +401,84 @@ session_refs: []
 
 cache option ${optionId}
 `;
+}
+
+async function writeIntentPractice(
+  knowledgeRoot,
+  { practiceId, optionId, keywords = [], appliesWhen = {}, doesNotApplyWhen = {} }
+) {
+  await fs.writeFile(
+    path.join(knowledgeRoot, "practices", `${practiceId}.md`),
+    `---
+id: ${practiceId}
+type: practice
+title: Intent Practice ${practiceId}
+summary: Intent practice summary without task-specific keywords.
+contexts: []
+constraints: []
+rules: []
+option_ids: [${optionId}]
+keywords: [${keywords.join(", ")}]
+status: active
+maturity: stable
+source_evidence: [src/views/intent.ts]
+session_refs: []
+applies_when:
+  task_kinds: [${(appliesWhen.task_kinds || []).join(", ")}]
+  technologies: [${(appliesWhen.technologies || []).join(", ")}]
+  path_prefixes: [${(appliesWhen.path_prefixes || []).join(", ")}]
+does_not_apply_when:
+  task_kinds: [${(doesNotApplyWhen.task_kinds || []).join(", ")}]
+  path_prefixes: [${(doesNotApplyWhen.path_prefixes || []).join(", ")}]
+---
+
+## Summary
+
+Intent practice summary without task-specific keywords.
+`,
+    "utf8"
+  );
+  await fs.writeFile(
+    path.join(knowledgeRoot, "options", `${optionId}.md`),
+    `---
+id: ${optionId}
+type: option
+title: Intent Option ${optionId}
+summary: Intent option summary.
+practice: ${practiceId}
+base_score: 50
+score_breakdown:
+  consistency: 10
+  efficiency: 10
+  maintainability: 10
+  extensibility: 10
+  risk: 10
+alternatives: []
+keywords: []
+status: active
+maturity: stable
+source_evidence: [src/views/intent-option.ts]
+session_refs: []
+---
+
+## Summary
+
+Intent option summary.
+`,
+    "utf8"
+  );
+}
+
+async function readUsageIndex(knowledgeRoot) {
+  return JSON.parse(
+    await fs.readFile(path.join(knowledgeRoot, "state", "usage-index.json"), "utf8")
+  );
+}
+
+async function writeEvidenceFiles(projectRoot, relativePaths) {
+  for (const relativePath of relativePaths) {
+    const absolutePath = path.join(projectRoot, relativePath);
+    await fs.mkdir(path.dirname(absolutePath), { recursive: true });
+    await fs.writeFile(absolutePath, `// evidence: ${relativePath}\n`, "utf8");
+  }
 }

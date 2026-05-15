@@ -5,8 +5,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildProjectGraphArtifacts } from "./build-project-graph-data.mjs";
-import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
-import { parseFrontmatterBlock } from "./knowledge-lib.mjs";
+import {
+  loadEvidencePolicy,
+  normalizeEvidencePath,
+  normalizeEvidencePaths,
+  normalizeEvidenceRecords
+} from "./evidence-paths.mjs";
+import { normalizeUsageEntry, parseFrontmatterBlock } from "./knowledge-lib.mjs";
 import {
   buildObsidianLinkSection,
   createLogEvent,
@@ -20,8 +25,15 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
   const incubatingNodes = input.incubatingNodes || [];
   const stableUpdates = input.stableUpdates || [];
   const adoptedNodeIds = input.adoptedNodeIds || [];
+  const rejectedNodeIds = input.rejectedNodeIds || [];
 
-  if (!writeSession && incubatingNodes.length === 0 && stableUpdates.length === 0 && adoptedNodeIds.length === 0) {
+  if (
+    !writeSession &&
+    incubatingNodes.length === 0 &&
+    stableUpdates.length === 0 &&
+    adoptedNodeIds.length === 0 &&
+    rejectedNodeIds.length === 0
+  ) {
     return { mode: "no-op", knowledgeRoot };
   }
 
@@ -30,7 +42,7 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
 
   if (incubatingNodes.length > 0) {
     mode = "session+incubating";
-  } else if (stableUpdates.length > 0 || adoptedNodeIds.length > 0) {
+  } else if (stableUpdates.length > 0 || adoptedNodeIds.length > 0 || rejectedNodeIds.length > 0) {
     mode = "session+stable-update";
   }
 
@@ -56,14 +68,21 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
   }
 
   let graphArtifacts = null;
-  if (adoptedNodeIds.length > 0 || incubatingNodes.length > 0 || stableUpdates.length > 0) {
+  if (
+    adoptedNodeIds.length > 0 ||
+    rejectedNodeIds.length > 0 ||
+    incubatingNodes.length > 0 ||
+    stableUpdates.length > 0
+  ) {
     await updateUsageIndex(knowledgeRoot, {
       sessionId,
       adoptedNodeIds,
+      rejectedNodeIds,
       mentionedNodeIds: dedupeValues([
         ...incubatingNodes.map((node) => node.id),
         ...stableUpdates.map((node) => node.id),
-        ...adoptedNodeIds
+        ...adoptedNodeIds,
+        ...rejectedNodeIds
       ])
     });
     graphArtifacts = await buildProjectGraphArtifacts(knowledgeRoot);
@@ -75,6 +94,7 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
     event: createLogEvent("pk:crystallize", `结晶会话 ${sessionId}`, {
       mode,
       adopted: adoptedNodeIds,
+      rejected: rejectedNodeIds,
       incubating: incubatingNodes.map((node) => node.id),
       updated: stableUpdates.map((node) => node.id)
     })
@@ -86,7 +106,8 @@ export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {})
     sessionId,
     incubatingNodeIds: incubatingNodes.map((node) => node.id),
     updatedNodeIds: stableUpdates.map((node) => node.id),
-    adoptedNodeIds
+    adoptedNodeIds,
+    rejectedNodeIds
   };
 }
 
@@ -204,6 +225,7 @@ async function writeSessionDocument(knowledgeRoot, sessionId, input, evidencePol
       ...(input.stableUpdates || []).map((node) => node.id)
     ]),
     adopted_nodes: dedupeValues(input.adoptedNodeIds || []),
+    rejected_nodes: dedupeValues(input.rejectedNodeIds || []),
     status: "recorded"
   };
   const body = {
@@ -229,7 +251,7 @@ function buildCrystallizationLine(input) {
 async function writeKnowledgeNode(knowledgeRoot, node, evidencePolicy) {
   const normalizedNode = {
     ...node,
-    source_evidence: normalizeEvidencePaths(node.source_evidence || [], evidencePolicy)
+    source_evidence: normalizeEvidenceValues(node.source_evidence || [], evidencePolicy)
   };
   const nodePath = resolveNodePath(knowledgeRoot, normalizedNode);
   const body = buildNodeBody(normalizedNode);
@@ -250,7 +272,7 @@ async function applyStableUpdate(knowledgeRoot, update, sessionId, evidencePolic
     title: update.title || data.title,
     summary: update.summary || data.summary || "",
     session_refs: dedupeValues([...(data.session_refs || []), ...(update.session_refs || []), sessionId]),
-    source_evidence: normalizeEvidencePaths(
+    source_evidence: normalizeEvidenceValues(
       [...(data.source_evidence || []), ...(update.source_evidence || [])],
       evidencePolicy
     )
@@ -263,35 +285,34 @@ async function applyStableUpdate(knowledgeRoot, update, sessionId, evidencePolic
   await fs.writeFile(nodePath, renderMarkdownDocument(frontmatter, sections), "utf8");
 }
 
-async function updateUsageIndex(knowledgeRoot, { sessionId, adoptedNodeIds, mentionedNodeIds }) {
+async function updateUsageIndex(knowledgeRoot, { sessionId, adoptedNodeIds, rejectedNodeIds, mentionedNodeIds }) {
   const usagePath = path.join(knowledgeRoot, "state", "usage-index.json");
   const rawUsage = await readJson(usagePath, {});
   const usageIndex = rawUsage.entries || rawUsage;
+  const usedDate = extractDateFromSessionId(sessionId);
 
   for (const nodeId of dedupeValues(mentionedNodeIds)) {
-    usageIndex[nodeId] = usageIndex[nodeId] || {
-      session_mentions: 0,
-      adopted_count: 0,
-      last_used_at: extractDateFromSessionId(sessionId),
-      last_session_id: sessionId
-    };
+    usageIndex[nodeId] = normalizeUsageEntry(usageIndex[nodeId]);
     usageIndex[nodeId].session_mentions += 1;
-    usageIndex[nodeId].last_used_at = extractDateFromSessionId(sessionId);
+    usageIndex[nodeId].last_used_at = usedDate;
     usageIndex[nodeId].last_session_id = sessionId;
   }
 
   for (const nodeId of dedupeValues(adoptedNodeIds)) {
-    usageIndex[nodeId] = usageIndex[nodeId] || {
-      session_mentions: 0,
-      adopted_count: 0,
-      last_used_at: extractDateFromSessionId(sessionId),
-      last_session_id: sessionId
-    };
+    usageIndex[nodeId] = normalizeUsageEntry(usageIndex[nodeId]);
     usageIndex[nodeId].adopted_count += 1;
-    usageIndex[nodeId].last_used_at = extractDateFromSessionId(sessionId);
+    usageIndex[nodeId].last_used_at = usedDate;
     usageIndex[nodeId].last_session_id = sessionId;
   }
 
+  for (const nodeId of dedupeValues(rejectedNodeIds)) {
+    usageIndex[nodeId] = normalizeUsageEntry(usageIndex[nodeId]);
+    usageIndex[nodeId].rejected_after_hit_count += 1;
+    usageIndex[nodeId].last_used_at = usedDate;
+    usageIndex[nodeId].last_session_id = sessionId;
+  }
+
+  await fs.mkdir(path.dirname(usagePath), { recursive: true });
   await fs.writeFile(usagePath, `${JSON.stringify(usageIndex, null, 2)}\n`, "utf8");
 }
 
@@ -348,11 +369,11 @@ function buildNodeBody(node) {
       node.maturity === "incubating" ? "尚未形成稳定默认做法。" : "需要在后续任务中持续验证。"
     ];
   } else {
-    sections.Evidence = node.source_evidence || [];
+    sections.Evidence = formatEvidenceSectionItems(node.source_evidence || []);
   }
 
   if ((node.source_evidence || []).length > 0 && node.type === "option") {
-    sections.Evidence = node.source_evidence;
+    sections.Evidence = formatEvidenceSectionItems(node.source_evidence);
   }
 
   const links = buildObsidianLinkSection(node);
@@ -420,7 +441,10 @@ function serializeYamlEntry(key, value, indentLevel) {
     if (value.length === 0) {
       return [`${indent}${key}: []`];
     }
-    return [`${indent}${key}:`, ...value.map((item) => `${indent}  - ${serializeScalar(item)}`)];
+    return [
+      `${indent}${key}:`,
+      ...value.flatMap((item) => serializeYamlArrayItem(item, indentLevel + 2))
+    ];
   }
 
   if (value && typeof value === "object") {
@@ -439,6 +463,24 @@ function serializeYamlEntry(key, value, indentLevel) {
   return [`${indent}${key}: ${serializeScalar(value)}`];
 }
 
+function serializeYamlArrayItem(item, indentLevel) {
+  const indent = " ".repeat(indentLevel);
+
+  if (item && typeof item === "object" && !Array.isArray(item)) {
+    const entries = Object.entries(item);
+    if (entries.length === 0) {
+      return [`${indent}- {}`];
+    }
+    const [[firstKey, firstValue], ...restEntries] = entries;
+    return [
+      `${indent}- ${firstKey}: ${serializeScalar(firstValue)}`,
+      ...restEntries.flatMap(([key, value]) => serializeYamlEntry(key, value, indentLevel + 2))
+    ];
+  }
+
+  return [`${indent}- ${serializeScalar(item)}`];
+}
+
 function serializeScalar(value) {
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
@@ -447,6 +489,24 @@ function serializeScalar(value) {
     return '""';
   }
   return String(value);
+}
+
+function normalizeEvidenceValues(sourceEvidence, evidencePolicy) {
+  const paths = normalizeEvidencePaths(sourceEvidence || [], evidencePolicy);
+  const recordsByPath = new Map(
+    normalizeEvidenceRecords(sourceEvidence || [], evidencePolicy).map((record) => [record.path, record])
+  );
+
+  return paths.map((evidencePath) => recordsByPath.get(evidencePath) || evidencePath);
+}
+
+function formatEvidenceSectionItems(sourceEvidence) {
+  return (sourceEvidence || []).map((item) => {
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      return item.symbol ? `${normalizeEvidencePath(item.path)}#${item.symbol}` : normalizeEvidencePath(item.path);
+    }
+    return normalizeEvidencePath(item);
+  });
 }
 
 function dedupeValues(values) {

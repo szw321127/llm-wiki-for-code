@@ -5,7 +5,12 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { rejectKnowledgeNode } from "./govern-project-knowledge.mjs";
+import {
+  archiveKnowledgeNode,
+  linkDuplicateKnowledgeNode,
+  rejectKnowledgeNode,
+  verifyKnowledgeNode
+} from "./govern-project-knowledge.mjs";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const port = Number(process.argv[3] || process.env.PORT || 8124);
@@ -37,7 +42,36 @@ export function createProjectKnowledgeServer(projectRoot) {
       );
 
       if (requestUrl.pathname === "/api/governance/reject") {
-        await handleGovernanceReject(request, response, resolvedProjectRoot);
+        await handleGovernanceAction(request, response, resolvedProjectRoot, rejectKnowledgeNode, (body) => ({
+          nodeId: body.nodeId,
+          reason: body.reason || "manual-reject"
+        }));
+        return;
+      }
+
+      if (requestUrl.pathname === "/api/governance/verify") {
+        await handleGovernanceAction(request, response, resolvedProjectRoot, verifyKnowledgeNode, (body) => ({
+          nodeId: body.nodeId,
+          verifiedAt: body.verifiedAt,
+          reason: body.reason || "manual-verify"
+        }));
+        return;
+      }
+
+      if (requestUrl.pathname === "/api/governance/archive") {
+        await handleGovernanceAction(request, response, resolvedProjectRoot, archiveKnowledgeNode, (body) => ({
+          nodeId: body.nodeId,
+          reason: body.reason || "manual-archive"
+        }));
+        return;
+      }
+
+      if (requestUrl.pathname === "/api/governance/link-duplicate") {
+        await handleGovernanceAction(request, response, resolvedProjectRoot, linkDuplicateKnowledgeNode, (body) => ({
+          nodeId: body.nodeId,
+          duplicateOf: body.duplicateOf,
+          reason: body.reason || "manual-duplicate"
+        }));
         return;
       }
 
@@ -65,7 +99,7 @@ export function createProjectKnowledgeServer(projectRoot) {
   });
 }
 
-async function handleGovernanceReject(request, response, projectRoot) {
+async function handleGovernanceAction(request, response, projectRoot, actionFn, inputBuilder) {
   if (request.method !== "POST") {
     writeJson(response, 405, { ok: false, error: "method-not-allowed" });
     return;
@@ -73,10 +107,7 @@ async function handleGovernanceReject(request, response, projectRoot) {
 
   try {
     const body = await readJsonRequest(request);
-    const action = await rejectKnowledgeNode(projectRoot, {
-      nodeId: body.nodeId,
-      reason: body.reason || "manual-reject"
-    });
+    const action = await actionFn(projectRoot, inputBuilder(body));
     writeJson(response, 200, { ok: true, action });
   } catch (error) {
     writeJson(response, 400, {

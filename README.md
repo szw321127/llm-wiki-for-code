@@ -9,7 +9,7 @@ LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把�
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
 </p>
 <p align="center">
-  中文文档 | <a href="README_EN.md">English</a>
+  中文文档 | [英文文档](README_EN.md)
 </p>
 
 仓库名和包名是 `llm-wiki-for-code`。助手插件保留短名 `pk`。
@@ -98,6 +98,21 @@ src/api/client.ts
 src/runtime/scheduler.ts
 ```
 
+也可以逐步升级为结构化 evidence record；旧的字符串路径仍然兼容：
+
+```yaml
+source_evidence:
+  - src/api/client.ts
+  - path: src/runtime/scheduler.ts
+    symbol: createScheduler
+    reason: Demonstrates project-wide scheduler boundary.
+    observed_pattern: Scheduler starts after login/user readiness.
+    stability: stable
+    last_verified_at: 2026-05-15
+```
+
+图谱会继续把 `source_evidence` 归一化为路径数组，同时在 `evidence_records` 中保留 `symbol`、`reason`、`observed_pattern`、`stability` 和 `last_verified_at`。稳定节点里的结构化证据应填写 `reason`，否则 `pk-lint` 会报告 `wiki-evidence-record-missing-reason`。
+
 默认策略会过滤常见的临时文件、工具状态、生成物和过程文档；它不是写死在 README 里的完整清单。每个知识库都可以通过 `.project-knowledge/evidence-policy.json` 调整：
 
 ```json
@@ -120,13 +135,15 @@ src/runtime/scheduler.ts
 
 这些规则会同时影响 `pk-preflight` 的 evidence 预览、`pk-auto-crystallize` 的 touched files、`pk-crystallize` 写入的 `source_evidence`，以及 `pk-lint` 的 volatile evidence 检查。
 
+`pk-lint` 也会检查非临时的 `source_evidence` 是否仍存在于项目中。断链路径会报告为 `node-missing-evidence-path`，并在能找到同名文件时给出 `repair_candidates`。`pk-preflight` 不会把不存在的 evidence 路径返回给 AI；`verifyKnowledgeNode` 默认也不会给证据断链的节点刷新 `last_verified_at`。
+
 项目不把完整代码片段作为主证据保存。推荐的证据形态是：
 
 - 稳定源码相对路径
 - 实践摘要
 - 方案摘要
 - 采纳次数
-- 必要时扩展 symbol、hash 或短摘要等元数据
+- 必要时扩展 symbol、reason、observed pattern、hash 或短摘要等元数据
 
 ## 环境要求
 
@@ -363,6 +380,33 @@ npm run pk:preflight -- <project-root> "实现 HTTP 调用"
 - 每个节点最多 5 条 evidence 预览
 - 每类扫描 hint 最多 5 条
 
+除了关键词、标题和摘要，预检还会从任务文本中提取本地 intent：
+
+- `taskKinds`：如 `frontend-page`、`crud-list`、`api-client`、`config`、`test`、`governance`。
+- `technologies`：如 `vue`、`react`、`node`、`typescript`。
+- `pathHints`：如 `src/views/users/UserList.vue` 会命中 `src/views` 前缀。
+- `operationHints`：如 `create`、`modify`、`review`、`debug`。
+
+知识节点可以用 `applies_when` 和 `does_not_apply_when` 调整适用范围，命中结果会返回 `matchReasons`，例如 `task-kind:frontend-page` 或 `path-prefix:src/views`。
+
+默认 `pk-preflight` 是只读的。需要把命中写入 `state/usage-index.json` 时，显式运行 `npm run pk:preflight -- <project-root> --record-hits "实现 HTTP 调用"`；这会增加 `preflight_hits` 并更新 `last_hit_at`。
+
+### 模拟评测 PK 是否帮到 AI
+
+```bash
+npm run pk:benchmark -- <project-root> <benchmark-samples.json> --k 3
+```
+
+benchmark 不调用 AI。它用一组带标注的任务样本反复运行 `pk-preflight`，计算：
+
+- `recallAtK`：期望命中的知识是否出现在前 K 个结果中。
+- `precisionAtK`：前 K 个结果中有多少是期望或允许的相关知识。
+- `falsePositiveRate`：标注为 `expectedNoMatches: true` 的负例任务中，有多少被误召回知识。
+- `noiseRate`：前 K 个结果中无关知识的比例。
+- `pass`：是否达到样本文件里的阈值。
+
+样本格式可参考 `tests/fixtures/pk-benchmark/preflight-samples.json`。这能先验证检索层是否可信；真正的 AI 帮助效果还应再用 A/B 任务执行评估。
+
 ### 任务结束后自动沉淀
 
 ```bash
@@ -387,7 +431,9 @@ npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 - 命中已有实践时，自动记录推荐方案被采纳。
 - 未命中且存在有效源码变更时，可能生成孵化中的 practice 和 option。
 - 只有临时文件、文档或 worktree 变更时，只记录 session。
-- 显式传入 `adoptedNodeIds`、`incubatingNodes` 或 `stableUpdates` 时，优先使用显式输入。
+- 显式传入 `adoptedNodeIds`、`rejectedNodeIds`、`incubatingNodes` 或 `stableUpdates` 时，优先使用显式输入。
+- 可传入 `taskId` 或 `taskDir` 读取通用任务/流程上下文；默认支持 `.tasks/<taskId>` 和 `tasks/<taskId>`，并兼容 `.trellis/tasks/<taskId>` 这类外部流程布局。过程文件只作为 `processSources` 和任务文本，不会默认写入长期 `source_evidence`；PK 不依赖 Trellis。
+- 默认不会读取 dirty git status 作为证据；只有 `allowGitStatusFallback: true` 时才会以低置信度使用 git status。
 
 ### 手动结晶
 
@@ -395,7 +441,7 @@ npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 npm run pk:crystallize -- <project-root> <crystallize-input.json>
 ```
 
-当你已经明确知道要采纳哪个节点、创建哪个候选节点或更新哪条稳定知识时，使用手动结晶。
+当你已经明确知道要采纳哪个节点、拒绝哪个预检推荐、创建哪个候选节点或更新哪条稳定知识时，使用手动结晶。`rejectedNodeIds` 会增加 `rejected_after_hit_count`，用于后续发现“经常命中但被拒绝”的知识。
 
 模板位于：
 
@@ -414,11 +460,23 @@ lint 会报告：
 
 - `node-missing-evidence`：节点缺少证据。
 - `node-volatile-evidence`：节点引用了临时或不稳定 evidence。
+- `node-missing-evidence-path`：节点引用的 evidence 路径已经不存在，报告里会尽量给出同名文件候选。
 - `option-missing-practice`：方案没有有效实践归属。
 - `practice-empty-recommendation-pool`：实践没有可推荐方案。
 - `incubating-promotion-candidate`：孵化节点达到转正阈值。
 - `recommendation-pool-eviction-candidate`：推荐池超过 3 个方案。
 - `possible-duplicate-node`：疑似重复知识节点。
+- `wiki-thin-page` / `wiki-oversized-page`：知识页过薄或过长。
+- `wiki-missing-summary` / `wiki-missing-required-section`：稳定知识缺少显式摘要或必要章节。
+- `wiki-bad-title` / `wiki-bad-id` / `wiki-wrong-directory`：节点标题、id 或目录位置不符合 wiki 约定。
+- `wiki-broken-node-link` / `wiki-orphan-node`：wiki 链接断裂，或节点缺少图谱连接、session ref 和 evidence。
+- `wiki-no-preflight-surface`：节点缺少 keywords，后续 `pk-preflight` 难以命中。
+- `wiki-missing-session-ref` / `wiki-missing-decision-reason`：稳定 option 缺少来源会话或采用理由。
+- `wiki-stale-node` / `wiki-stale-evidence`：节点或证据超过 `stale_after_days` 未验证。
+- `wiki-high-rank-stale-recommendation`：仍在推荐池中的高排名 option 已过期。
+- `wiki-missing-owner-for-strong-rule` / `wiki-missing-verification-date` / `wiki-invalid-verification-date`：强规则缺少 owner 或验证日期不可用。
+- `wiki-never-hit` / `wiki-hit-but-never-adopted` / `wiki-frequently-rejected-after-hit`：知识从未被预检命中、多次命中但未采纳，或命中后经常被拒绝。
+- `wiki-active-conflicting-rules` / `wiki-superseded-node-still-recommended` / `wiki-duplicate-practice-scope`：active 规则互相冲突、已 superseded 节点仍残留在推荐面，或多个 practice 声明同一 scope。
 
 ### 执行可逆治理
 
@@ -426,7 +484,7 @@ lint 会报告：
 npm run pk:govern -- <project-root>
 ```
 
-治理只做可逆操作：
+默认只预览治理动作；需要写入时运行 `npm run pk:govern -- <project-root> --apply`。治理只做可逆操作：
 
 - 提升达到条件的孵化节点。
 - 将推荐池 Top 3 之外的方案退回孵化区。
@@ -506,3 +564,5 @@ npm test
 ```bash
 npm test
 ```
+
+

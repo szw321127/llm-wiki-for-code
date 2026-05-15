@@ -66,9 +66,53 @@ test("buildProjectGraphFromDirectory loads root project profile and incubating n
   assert.equal(incubatingOption.final_scores["project-current"], 32);
   assert.equal(practice.recommended_options.global, "option-unified-client");
   assert.equal(practice.recommended_options["project-current"], "option-unified-client");
+  assert.equal(stableOption.has_explicit_summary, true);
   assert.deepEqual(practice.ranked_option_ids["project-current"], [
     "option-unified-client",
     "option-direct-call"
+  ]);
+});
+
+test("buildProjectGraphFromDirectory preserves wiki governance metadata", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-metadata-"));
+  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
+  await writeGovernanceMetadataRule(knowledgeRoot);
+
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const rule = graph.nodes.find((node) => node.id === "rule-governance-metadata");
+
+  assert.equal(rule.last_verified_at, "2026-05-15");
+  assert.equal(rule.stale_after_days, 90);
+  assert.equal(rule.owner, "platform-team");
+  assert.deepEqual(rule.reviewers, ["maintainer-a", "maintainer-b"]);
+  assert.deepEqual(rule.conflicts_with, ["rule-old"]);
+  assert.deepEqual(rule.supersedes, ["rule-older"]);
+  assert.equal(rule.superseded_by, "rule-new");
+});
+
+test("buildProjectGraphFromDirectory normalizes rich evidence records", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-rich-evidence-"));
+  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
+  await writeRichEvidenceOption(knowledgeRoot);
+
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const option = graph.nodes.find((node) => node.id === "option-rich-evidence");
+
+  assert.deepEqual(option.source_evidence, [
+    "src/api/client.ts",
+    "src/runtime/scheduler.ts"
+  ]);
+  assert.deepEqual(option.evidence_records, [
+    {
+      path: "src/runtime/scheduler.ts",
+      symbol: "createScheduler",
+      reason: "Demonstrates project-wide scheduler boundary.",
+      observed_pattern: "Scheduler starts after login/user readiness.",
+      stability: "stable",
+      last_verified_at: "2026-05-15"
+    }
   ]);
 });
 
@@ -110,6 +154,113 @@ test("buildProjectGraphFromDirectory ranks recommendation pools with usage adjus
   ]);
   assert.equal(practice.recommended_options["project-current"], "option-unified-client");
   assert.equal(practice.recommendation_pools["project-current"].length, 3);
+});
+
+test("buildProjectGraphFromDirectory ranks adoption above raw preflight hits", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-usefulness-"));
+  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
+
+  await writeOption(knowledgeRoot, {
+    id: "option-adopted-lower-base",
+    title: "Adopted Lower Base",
+    baseScore: 82,
+    evidence: "src/api/adopted-lower-base.ts"
+  });
+  await writeOption(knowledgeRoot, {
+    id: "option-hit-only-higher-base",
+    title: "Hit Only Higher Base",
+    baseScore: 84,
+    evidence: "src/api/hit-only-higher-base.ts"
+  });
+  await fs.writeFile(
+    path.join(knowledgeRoot, "state", "usage-index.json"),
+    `${JSON.stringify(
+      {
+        "option-adopted-lower-base": {
+          session_mentions: 0,
+          preflight_hits: 0,
+          adopted_count: 2,
+          rejected_after_hit_count: 0,
+          last_used_at: "2026-05-15",
+          last_session_id: "session-adopted"
+        },
+        "option-hit-only-higher-base": {
+          session_mentions: 0,
+          preflight_hits: 20,
+          adopted_count: 0,
+          rejected_after_hit_count: 0,
+          last_hit_at: "2026-05-15"
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const practice = graph.nodes.find((node) => node.id === "practice-http-client");
+  const adoptedIndex = practice.ranked_option_ids.global.indexOf("option-adopted-lower-base");
+  const hitOnlyIndex = practice.ranked_option_ids.global.indexOf("option-hit-only-higher-base");
+  const hitOnlyOption = graph.nodes.find((node) => node.id === "option-hit-only-higher-base");
+
+  assert.equal(hitOnlyOption.usage_stats.preflight_hits, 20);
+  assert.equal(hitOnlyOption.usage_stats.rejected_after_hit_count, 0);
+  assert.equal(hitOnlyOption.usage_adjustment, 3);
+  assert.ok(adoptedIndex >= 0);
+  assert.ok(hitOnlyIndex >= 0);
+  assert.ok(adoptedIndex < hitOnlyIndex);
+});
+
+test("buildProjectGraphFromDirectory excludes superseded options from recommendation ranking", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-superseded-"));
+  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
+
+  await writeOption(knowledgeRoot, {
+    id: "option-superseded-high-score",
+    title: "Superseded High Score",
+    baseScore: 120,
+    evidence: "src/api/superseded-high.ts"
+  });
+  await markOptionSuperseded(
+    path.join(knowledgeRoot, "options", "option-superseded-high-score.md"),
+    "option-unified-client"
+  );
+
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const practice = graph.nodes.find((node) => node.id === "practice-http-client");
+  const supersededOption = graph.nodes.find((node) => node.id === "option-superseded-high-score");
+
+  assert.equal(supersededOption.superseded_by, "option-unified-client");
+  assert.equal(supersededOption.lifecycle_state, "superseded");
+  assert.equal(practice.ranked_option_ids["project-current"].includes("option-superseded-high-score"), false);
+  assert.equal(practice.recommendation_pools["project-current"].includes("option-superseded-high-score"), false);
+});
+
+test("buildProjectGraphFromDirectory excludes archived options from recommendation ranking", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-archived-"));
+  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
+
+  await writeOption(knowledgeRoot, {
+    id: "option-archived-high-score",
+    title: "Archived High Score",
+    baseScore: 120,
+    evidence: "src/api/archived-high.ts"
+  });
+  await markOptionArchived(
+    path.join(knowledgeRoot, "options", "option-archived-high-score.md")
+  );
+
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const practice = graph.nodes.find((node) => node.id === "practice-http-client");
+  const archivedOption = graph.nodes.find((node) => node.id === "option-archived-high-score");
+
+  assert.equal(archivedOption.status, "archived");
+  assert.equal(practice.ranked_option_ids["project-current"].includes("option-archived-high-score"), false);
+  assert.equal(practice.recommendation_pools["project-current"].includes("option-archived-high-score"), false);
 });
 
 test("buildProjectGraphFromDirectory marks promotion and eviction candidates", async () => {
@@ -209,6 +360,100 @@ session_refs: []
 ## Summary
 
 ${title}。
+`,
+    "utf8"
+  );
+}
+
+async function markOptionSuperseded(filePath, supersededBy) {
+  const source = await fs.readFile(filePath, "utf8");
+  await fs.writeFile(
+    filePath,
+    source.replace("session_refs: []", `session_refs: []\nsuperseded_by: ${supersededBy}`),
+    "utf8"
+  );
+}
+
+async function markOptionArchived(filePath) {
+  const source = await fs.readFile(filePath, "utf8");
+  await fs.writeFile(
+    filePath,
+    source.replace("status: active", "status: archived"),
+    "utf8"
+  );
+}
+
+async function writeGovernanceMetadataRule(knowledgeRoot) {
+  await fs.writeFile(
+    path.join(knowledgeRoot, "rules", "rule-governance-metadata.md"),
+    `---
+id: rule-governance-metadata
+type: rule
+title: Governance Metadata Rule
+summary: Preserves governance metadata.
+applies_to: [practice-http-client]
+priority: strong
+keywords: [metadata]
+status: active
+maturity: stable
+source_evidence: [src/api/metadata.ts]
+session_refs: [session-metadata]
+last_verified_at: 2026-05-15
+stale_after_days: 90
+owner: platform-team
+reviewers: [maintainer-a, maintainer-b]
+conflicts_with: [rule-old]
+supersedes: [rule-older]
+superseded_by: rule-new
+---
+
+## Summary
+
+Preserves governance metadata.
+`,
+    "utf8"
+  );
+}
+
+async function writeRichEvidenceOption(knowledgeRoot) {
+  await fs.writeFile(
+    path.join(knowledgeRoot, "options", "option-rich-evidence.md"),
+    `---
+id: option-rich-evidence
+type: option
+title: Rich Evidence Option
+summary: Preserves structured evidence records.
+practice: practice-http-client
+base_score: 90
+score_breakdown:
+  consistency: 18
+  efficiency: 18
+  maintainability: 18
+  extensibility: 18
+  risk: 18
+constraints: []
+alternatives: []
+keywords: [evidence]
+status: active
+maturity: stable
+source_evidence:
+  - src/api/client.ts
+  - path: src/runtime/scheduler.ts
+    symbol: createScheduler
+    reason: Demonstrates project-wide scheduler boundary.
+    observed_pattern: Scheduler starts after login/user readiness.
+    stability: stable
+    last_verified_at: 2026-05-15
+session_refs: [session-rich-evidence]
+---
+
+## Summary
+
+Preserves structured evidence records.
+
+## Decision
+
+Use structured evidence when a path alone is not auditable enough.
 `,
     "utf8"
   );

@@ -1,11 +1,14 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { pathToFileURL } from "node:url";
+import { promisify } from "node:util";
 
+const execFileAsync = promisify(execFile);
 const root = path.resolve(".");
 const marketplacePath = path.join(root, ".agents", "plugins", "marketplace.json");
 const pluginRoot = path.join(root, "plugins", "pk");
@@ -17,6 +20,7 @@ const rootSkillPath = path.join(root, "SKILL.md");
 const commandDirectory = path.join(pluginRoot, "commands");
 const skillsDirectory = path.join(pluginRoot, "skills");
 const initFixtureRoot = path.resolve("tests", "fixtures", "init-sample-project");
+const sampleFixtureRoot = path.resolve("tests", "fixtures", "sample-project");
 
 test("repository exposes a local Codex marketplace for the pk plugin", () => {
   assert.equal(fs.existsSync(marketplacePath), true);
@@ -143,4 +147,29 @@ test("pk init wrapper stays runnable after copying the plugin into a cache-style
   assert.doesNotMatch(workflow, /\/pk:/);
   assert.match(workflow, /pk-status/);
   assert.match(workflow, /pk-graph/);
+});
+
+test("pk preflight wrapper can opt into recording usage hits", async () => {
+  const tempRoot = await fsp.mkdtemp(path.join(os.tmpdir(), "pk-plugin-preflight-hits-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+
+  await fsp.cp(sampleFixtureRoot, projectRoot, { recursive: true });
+
+  const { stdout } = await execFileAsync(process.execPath, [
+    path.join(pluginRoot, "scripts", "pk-preflight.mjs"),
+    projectRoot,
+    "--record-hits",
+    "页面里需要实现 http request client"
+  ]);
+  const result = JSON.parse(stdout);
+  const usageIndex = JSON.parse(
+    await fsp.readFile(
+      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      "utf8"
+    )
+  );
+
+  assert.equal(result.mode, "knowledge-hit");
+  assert.equal(usageIndex["practice-http-client"].preflight_hits, 1);
+  assert.equal(usageIndex["option-unified-client"].preflight_hits, 1);
 });

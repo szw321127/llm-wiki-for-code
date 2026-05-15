@@ -1,0 +1,2 @@
+{"event":"changed","path":"src/api/retryPolicy.ts","summary":"Added retry policy helper."}
+{"event":"changed","file":"src/api/client.ts","summary":"Connected retry policy to shared client."}

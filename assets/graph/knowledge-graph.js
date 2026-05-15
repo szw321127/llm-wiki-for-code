@@ -38,6 +38,29 @@ const elements = {
   detailReadingPanel: document.querySelector("#detail-reading-panel")
 };
 
+const GOVERNANCE_ACTIONS = {
+  reject: {
+    endpoint: "/api/governance/reject",
+    reason: "graph-manual-reject",
+    doneText: "已打回该知识节点"
+  },
+  verify: {
+    endpoint: "/api/governance/verify",
+    reason: "graph-manual-verify",
+    doneText: "已标记该知识节点为已验证"
+  },
+  archive: {
+    endpoint: "/api/governance/archive",
+    reason: "graph-manual-archive",
+    doneText: "已归档该知识节点"
+  },
+  "link-duplicate": {
+    endpoint: "/api/governance/link-duplicate",
+    reason: "graph-manual-duplicate",
+    doneText: "已标记该知识节点为重复"
+  }
+};
+
 initialize().catch((error) => {
   elements.graphSummary.textContent = "图谱数据加载失败。";
   elements.graphEmptyState.hidden = false;
@@ -475,20 +498,32 @@ function onDetailPanelClick(event) {
 async function handleGovernanceAction(button) {
   const action = button.dataset.governanceAction;
   const nodeId = button.dataset.nodeId;
-  if (action !== "reject" || !nodeId) {
+  if (!nodeId || !GOVERNANCE_ACTIONS[action]) {
     return;
+  }
+  const actionSpec = GOVERNANCE_ACTIONS[action];
+  const body = {
+    nodeId,
+    reason: actionSpec.reason
+  };
+  if (action === "verify") {
+    body.verifiedAt = new Date().toISOString().slice(0, 10);
+  }
+  if (action === "link-duplicate") {
+    const duplicateOf = window.prompt("输入保留节点 id");
+    if (!duplicateOf) {
+      return;
+    }
+    body.duplicateOf = duplicateOf.trim();
   }
 
   button.disabled = true;
   button.textContent = "处理中";
 
-  const response = await fetch("/api/governance/reject", {
+  const response = await fetch(actionSpec.endpoint, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      nodeId,
-      reason: "graph-manual-reject"
-    })
+    body: JSON.stringify(body)
   });
   const payload = await response.json();
   if (!response.ok || !payload.ok) {
@@ -498,7 +533,7 @@ async function handleGovernanceAction(button) {
   await reloadGraphData();
   state.selectedNodeId = nodeId;
   state.focusedNodeId = nodeId;
-  elements.graphSummary.textContent = "已打回该知识节点，图谱数据已刷新。";
+  elements.graphSummary.textContent = `${actionSpec.doneText}，图谱数据已刷新。`;
   render();
 }
 
@@ -622,37 +657,73 @@ function renderDetail(node, nodeMap) {
 }
 
 function renderDetailGovernanceBlock(node) {
-  const canReject = node.type !== "project_profile" && node.review_status !== "rejected";
+  const canGovern = node.type !== "project_profile";
+  const canReject = canGovern && node.review_status !== "rejected";
+  const canArchive = canGovern && node.status !== "archived";
+  const canVerify = canGovern && node.status !== "archived";
+  const canLinkDuplicate = canGovern && node.review_status !== "rejected";
   const lifecycleText = node.lifecycle_state === "promotion_candidate"
     ? "达到转正候选"
     : node.review_status === "rejected"
       ? "已打回"
+      : node.status === "archived"
+        ? "已归档"
       : node.maturity === "incubating"
         ? "孵化观察"
         : "稳定知识";
+  const usage = node.usage_stats || {};
+  const evidenceConfidence = (node.evidence_records || []).some((record) => record.reason)
+    ? "结构化"
+    : (node.source_evidence || []).length > 0
+      ? "路径"
+      : "无";
 
   return `
     <section class="detail-block detail-governance-block">
       <h3 class="detail-block-title">治理状态</h3>
       ${renderFactGrid([
         { label: "生命周期", value: lifecycleText },
-        { label: "人工状态", value: node.review_status === "rejected" ? "已打回" : "可治理" }
+        { label: "人工状态", value: node.review_status === "rejected" ? "已打回" : "可治理" },
+        { label: "证据置信", value: evidenceConfidence },
+        { label: "最近验证", value: node.last_verified_at || "未记录" },
+        { label: "Owner", value: node.owner || "未设置" },
+        { label: "命中/采纳", value: `${usage.preflight_hits || 0}/${usage.adopted_count || 0}` }
       ])}
       <div class="governance-action-row">
         ${
-          canReject
-            ? `
-              <button
-                class="governance-button"
-                type="button"
-                data-governance-action="reject"
-                data-node-id="${escapeAttribute(node.id)}"
-              >打回孵化</button>
-            `
-            : `<span class="governance-note">当前节点没有可执行治理动作。</span>`
+          canVerify
+            ? renderGovernanceButton("verify", node.id, "标记验证", "governance-button-secondary")
+            : ""
         }
+        ${
+          canReject
+            ? renderGovernanceButton("reject", node.id, "打回孵化", "governance-button-danger")
+            : ""
+        }
+        ${
+          canArchive
+            ? renderGovernanceButton("archive", node.id, "归档", "governance-button-danger")
+            : ""
+        }
+        ${
+          canLinkDuplicate
+            ? renderGovernanceButton("link-duplicate", node.id, "标记重复", "governance-button-secondary")
+            : ""
+        }
+        ${canGovern ? "" : `<span class="governance-note">当前节点没有可执行治理动作。</span>`}
       </div>
     </section>
+  `;
+}
+
+function renderGovernanceButton(action, nodeId, label, modifierClass = "") {
+  return `
+    <button
+      class="governance-button ${modifierClass}"
+      type="button"
+      data-governance-action="${escapeAttribute(action)}"
+      data-node-id="${escapeAttribute(nodeId)}"
+    >${escapeHtml(label)}</button>
   `;
 }
 

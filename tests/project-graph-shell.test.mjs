@@ -328,13 +328,22 @@ test("project graph shell renders unified single-column detail blocks", () => {
   assert.doesNotMatch(js, /score-hero-primary/);
 });
 
-test("project graph shell exposes governance rejection actions", () => {
+test("project graph shell exposes governance actions", () => {
   assert.match(js, /renderDetailGovernanceBlock/);
-  assert.match(js, /data-governance-action="reject"/);
+  assert.match(js, /data-governance-action="\$\{escapeAttribute\(action\)\}"/);
+  assert.match(js, /renderGovernanceButton\("reject"/);
+  assert.match(js, /renderGovernanceButton\("verify"/);
+  assert.match(js, /renderGovernanceButton\("archive"/);
+  assert.match(js, /renderGovernanceButton\("link-duplicate"/);
   assert.match(js, /\/api\/governance\/reject/);
+  assert.match(js, /\/api\/governance\/verify/);
+  assert.match(js, /\/api\/governance\/archive/);
+  assert.match(js, /\/api\/governance\/link-duplicate/);
   assert.match(js, /reloadGraphData/);
   assert.match(css, /\.governance-action-row/);
   assert.match(css, /\.governance-button/);
+  assert.match(css, /\.governance-button-secondary/);
+  assert.match(css, /\.governance-button-danger/);
 });
 
 test("project graph runtime keeps project profile, practices, and recommended options in the default snapshot", () => {

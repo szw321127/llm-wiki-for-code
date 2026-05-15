@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { normalizeEvidencePaths, normalizeEvidenceRecords } from "./evidence-paths.mjs";
+
 const ENTITY_DIRECTORIES = [
   "practices",
   "options",
@@ -45,7 +47,8 @@ export function computeFinalScore(baseScore, projectAdjustment = 0) {
 export function computeUsageAdjustment(usageStats = {}) {
   const adoptedCount = Number(usageStats.adopted_count || 0);
   const sessionMentions = Number(usageStats.session_mentions || 0);
-  return Math.min(adoptedCount * 3 + sessionMentions, 15);
+  const preflightHits = Number(usageStats.preflight_hits || 0);
+  return Math.min(adoptedCount * 3 + sessionMentions + Math.min(preflightHits, 3), 18);
 }
 
 export function computeEffectiveScore(baseScore, projectAdjustment = 0, usageAdjustment = 0) {
@@ -82,6 +85,9 @@ export async function parseMarkdownDocument(filePath, rootDirectory) {
     ...data,
     body,
     summary: data.summary || extractSummary(body),
+    has_explicit_summary:
+      Object.prototype.hasOwnProperty.call(data, "summary") &&
+      String(data.summary || "").trim().length > 0,
     source_path: path.relative(rootDirectory, filePath).replace(/\\/g, "/")
   };
 }
@@ -96,12 +102,7 @@ export async function buildProjectGraphFromDirectory(projectKnowledgeDir) {
   const optionsByPractice = new Map();
 
   for (const node of nodes) {
-    node.usage_stats = usageIndex[node.id] || {
-      session_mentions: 0,
-      adopted_count: 0,
-      last_used_at: null,
-      last_session_id: null
-    };
+    node.usage_stats = normalizeUsageStats(usageIndex[node.id]);
     node.usage_adjustment = computeUsageAdjustment(node.usage_stats);
     attachLifecycleState(node);
   }
@@ -320,6 +321,7 @@ function normalizeNode(document) {
     type: document.type,
     title: document.title,
     summary: document.summary || "",
+    has_explicit_summary: Boolean(document.has_explicit_summary),
     body: document.body,
     source_path: document.source_path,
     status: document.status || "active",
@@ -347,8 +349,25 @@ function normalizeNode(document) {
     build_tools: asArray(document.build_tools),
     test_tools: asArray(document.test_tools),
     doc_entrypoints: asArray(document.doc_entrypoints),
-    source_evidence: asArray(document.source_evidence),
+    source_evidence: normalizeEvidencePaths(document.source_evidence || [], {
+      useDefaultIgnores: false,
+      allowAbsolutePaths: true
+    }),
+    evidence_records: normalizeEvidenceRecords(document.source_evidence || [], {
+      useDefaultIgnores: false,
+      allowAbsolutePaths: true
+    }),
     session_refs: asArray(document.session_refs),
+    last_verified_at: asOptionalString(document.last_verified_at),
+    stale_after_days: asOptionalNumber(document.stale_after_days),
+    owner: asOptionalString(document.owner),
+    reviewers: asArray(document.reviewers),
+    conflicts_with: asArray(document.conflicts_with),
+    supersedes: asArray(document.supersedes),
+    superseded_by: asOptionalString(document.superseded_by),
+    applies_when: normalizeApplicability(document.applies_when),
+    does_not_apply_when: normalizeApplicability(document.does_not_apply_when),
+    risk_if_misapplied: asOptionalString(document.risk_if_misapplied),
     scope: document.scope || null,
     priority: document.priority || "default"
   };
@@ -415,6 +434,8 @@ function rankOptionNodes(optionIds, nodeMap, viewId) {
     .map((optionId) => nodeMap.get(optionId))
     .filter(Boolean)
     .filter((optionNode) => optionNode.review_status !== "rejected")
+    .filter((optionNode) => optionNode.status !== "archived")
+    .filter((optionNode) => !optionNode.superseded_by)
     .sort((left, right) => compareOptions(left, right, viewId));
 }
 
@@ -441,6 +462,12 @@ function attachLifecycleState(node) {
   if (node.review_status === "rejected") {
     node.lifecycle_state = "rejected";
     node.lifecycle_reasons = ["manual-rejected"];
+    return;
+  }
+
+  if (node.superseded_by) {
+    node.lifecycle_state = "superseded";
+    node.lifecycle_reasons = [`superseded-by:${node.superseded_by}`];
     return;
   }
 
@@ -603,6 +630,41 @@ function asArray(value) {
   return Array.isArray(value) ? value : [value];
 }
 
+function asOptionalString(value) {
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
+function asOptionalNumber(value) {
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+export function normalizeUsageEntry(value = {}) {
+  const stats = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return {
+    session_mentions: Number(stats.session_mentions || 0),
+    preflight_hits: Number(stats.preflight_hits || 0),
+    adopted_count: Number(stats.adopted_count || 0),
+    rejected_after_hit_count: Number(stats.rejected_after_hit_count || 0),
+    last_hit_at: stats.last_hit_at || null,
+    last_used_at: stats.last_used_at || null,
+    last_session_id: stats.last_session_id || null
+  };
+}
+
+function normalizeUsageStats(value = {}) {
+  return normalizeUsageEntry(value);
+}
+
+function normalizeApplicability(value = {}) {
+  const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  return {
+    task_kinds: asArray(source.task_kinds),
+    technologies: asArray(source.technologies),
+    path_prefixes: asArray(source.path_prefixes)
+  };
+}
+
 function parseYamlSubset(source) {
   const lines = source.split("\n");
   const { value } = parseBlock(lines, 0, 0, "object");
@@ -643,6 +705,14 @@ function parseBlock(lines, startIndex, indentLevel, containerType) {
         continue;
       }
 
+      if (itemSource.includes(":")) {
+        const inlineObject = parseInlineObjectItem(itemSource);
+        const nested = parseNestedObjectContinuation(lines, index + 1, currentIndent);
+        result.push({ ...inlineObject, ...nested.value });
+        index = nested.nextIndex;
+        continue;
+      }
+
       result.push(parseScalar(itemSource));
       index += 1;
       continue;
@@ -672,6 +742,53 @@ function parseBlock(lines, startIndex, indentLevel, containerType) {
   }
 
   return { value: result, nextIndex: index };
+}
+
+function parseInlineObjectItem(itemSource) {
+  const separatorIndex = itemSource.indexOf(":");
+  if (separatorIndex === -1) {
+    return {};
+  }
+  const key = itemSource.slice(0, separatorIndex).trim();
+  const rawValue = itemSource.slice(separatorIndex + 1).trim();
+  return {
+    [key]: rawValue ? parseScalar(rawValue) : {}
+  };
+}
+
+function parseNestedObjectContinuation(lines, startIndex, itemIndent) {
+  let index = startIndex;
+  const value = {};
+
+  while (index < lines.length) {
+    const rawLine = lines[index];
+    const trimmed = rawLine.trim();
+
+    if (!trimmed) {
+      index += 1;
+      continue;
+    }
+
+    const currentIndent = countIndent(rawLine);
+    if (currentIndent <= itemIndent) {
+      break;
+    }
+    if (trimmed.startsWith("- ")) {
+      break;
+    }
+
+    const separatorIndex = trimmed.indexOf(":");
+    if (separatorIndex === -1) {
+      throw new Error(`无法解析 frontmatter 行: ${rawLine}`);
+    }
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    value[key] = rawValue ? parseScalar(rawValue) : {};
+    index += 1;
+  }
+
+  return { value, nextIndex: index };
 }
 
 function parseNestedValue(lines, startIndex, parentIndent) {

@@ -545,6 +545,26 @@ button {
   background: rgba(190, 109, 45, 0.18);
 }
 
+.governance-button-secondary {
+  border-color: rgba(15, 107, 95, 0.22);
+  background: rgba(15, 107, 95, 0.1);
+  color: var(--practice);
+}
+
+.governance-button-secondary:hover {
+  background: rgba(15, 107, 95, 0.16);
+}
+
+.governance-button-danger {
+  border-color: rgba(164, 62, 59, 0.24);
+  background: rgba(164, 62, 59, 0.1);
+  color: #9b302d;
+}
+
+.governance-button-danger:hover {
+  background: rgba(164, 62, 59, 0.16);
+}
+
 .governance-button:disabled {
   cursor: wait;
   opacity: 0.6;
