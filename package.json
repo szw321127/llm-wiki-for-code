@@ -16,8 +16,9 @@
     "pk:auto-crystallize": "node scripts/auto-crystallize-session.mjs",
     "pk:lint": "node scripts/lint-project-knowledge.mjs",
     "pk:govern": "node scripts/govern-project-knowledge.mjs",
+    "pk:benchmark": "node scripts/benchmark-preflight.mjs",
     "pk:serve": "node scripts/serve-project-knowledge.mjs",
-    "test": "node --experimental-test-isolation=none --test tests/skill-shell.test.mjs tests/plugin-command-shell.test.mjs tests/codex-local-plugin-install.test.mjs tests/knowledge-lib.test.mjs tests/preflight.test.mjs tests/lint.test.mjs tests/governance.test.mjs tests/governance-api.test.mjs tests/init.test.mjs tests/graph-build.test.mjs tests/status.test.mjs tests/crystallize.test.mjs tests/auto-crystallize.test.mjs tests/project-graph-shell.test.mjs knowledge/tests/build-graph-data.test.mjs knowledge/tests/graph-runtime.test.mjs knowledge/tests/graph-shell.test.mjs knowledge/tests/serve-knowledge.test.mjs",
+    "test": "node --experimental-test-isolation=none --test tests/skill-shell.test.mjs tests/plugin-command-shell.test.mjs tests/codex-local-plugin-install.test.mjs tests/knowledge-lib.test.mjs tests/preflight.test.mjs tests/pk-benchmark.test.mjs tests/lint.test.mjs tests/governance.test.mjs tests/governance-api.test.mjs tests/init.test.mjs tests/graph-build.test.mjs tests/status.test.mjs tests/crystallize.test.mjs tests/auto-crystallize.test.mjs tests/task-adapters.test.mjs tests/project-graph-shell.test.mjs knowledge/tests/build-graph-data.test.mjs knowledge/tests/graph-runtime.test.mjs knowledge/tests/graph-shell.test.mjs knowledge/tests/serve-knowledge.test.mjs",
     "serve": "node knowledge/tools/serve-knowledge.mjs"
   }
 }

@@ -5,6 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildProjectGraphArtifacts } from "./build-project-graph-data.mjs";
+import { inspectEvidencePaths, loadEvidencePolicy } from "./evidence-paths.mjs";
 import { buildProjectGraphFromDirectory, parseFrontmatterBlock } from "./knowledge-lib.mjs";
 import { lintProjectKnowledge } from "./lint-project-knowledge.mjs";
 import { createLogEvent, refreshObsidianVault } from "./obsidian-lib.mjs";
@@ -16,6 +17,7 @@ export async function governProjectKnowledge(projectRootOrKnowledgeRoot = proces
   const report = await lintProjectKnowledge(knowledgeRoot);
   const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
   const nodeMap = new Map(graph.nodes.map((node) => [node.id, node]));
+  const dryRun = options.dryRun !== false;
   const actions = [];
   const duplicateNodeIds = new Set();
 
@@ -26,7 +28,9 @@ export async function governProjectKnowledge(projectRootOrKnowledgeRoot = proces
       continue;
     }
 
-    const action = await rejectDuplicateNode(knowledgeRoot, nodeMap, issue);
+    const action = dryRun
+      ? planRejectDuplicateNode(nodeMap, issue)
+      : await rejectDuplicateNode(knowledgeRoot, nodeMap, issue);
     if (action) {
       actions.push(action);
     }
@@ -42,7 +46,7 @@ export async function governProjectKnowledge(projectRootOrKnowledgeRoot = proces
       continue;
     }
 
-    actions.push(await promoteNode(knowledgeRoot, node));
+    actions.push(dryRun ? planPromoteNode(node) : await promoteNode(knowledgeRoot, node));
   }
 
   for (const issue of report.issues.filter((item) => item.code === "recommendation-pool-eviction-candidate")) {
@@ -52,17 +56,22 @@ export async function governProjectKnowledge(projectRootOrKnowledgeRoot = proces
         continue;
       }
 
-      actions.push(await rejectKnowledgeNode(knowledgeRoot, {
-        nodeId,
-        reason: `evicted-from-${issue.node_id}-${issue.view_id}`,
-        actionType: node.maturity === "stable" ? "demote" : "reject"
-      }));
+      actions.push(dryRun
+        ? planRejectKnowledgeNode(node, {
+          reason: `evicted-from-${issue.node_id}-${issue.view_id}`,
+          actionType: node.maturity === "stable" ? "demote" : "reject"
+        })
+        : await rejectKnowledgeNode(knowledgeRoot, {
+          nodeId,
+          reason: `evicted-from-${issue.node_id}-${issue.view_id}`,
+          actionType: node.maturity === "stable" ? "demote" : "reject"
+        }));
     }
   }
 
   const uniqueActions = dedupeActions(actions);
   let graphArtifacts = null;
-  if (uniqueActions.length > 0 && options.rebuildGraph !== false) {
+  if (!dryRun && uniqueActions.length > 0 && options.rebuildGraph !== false) {
     graphArtifacts = await buildProjectGraphArtifacts(knowledgeRoot);
     await refreshObsidianVault(knowledgeRoot, {
       graph: graphArtifacts.graph,
@@ -70,6 +79,18 @@ export async function governProjectKnowledge(projectRootOrKnowledgeRoot = proces
         actions: uniqueActions.map((action) => `${action.type}:${action.node_id}`)
       })
     });
+  }
+
+  if (dryRun) {
+    return {
+      mode: uniqueActions.length > 0 ? "dry-run" : "no-op",
+      knowledgeRoot,
+      planned_action_count: uniqueActions.length,
+      planned_actions: uniqueActions,
+      action_count: 0,
+      actions: [],
+      graph_rebuilt: false
+    };
   }
 
   return {
@@ -118,6 +139,164 @@ export async function rejectKnowledgeNode(projectRootOrKnowledgeRoot, input = {}
   };
 }
 
+export async function verifyKnowledgeNode(projectRootOrKnowledgeRoot, input = {}) {
+  const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
+  const nodeId = validateNodeId(input.nodeId);
+  const verifiedAt = normalizeDateInput(input.verifiedAt || new Date());
+  const reason = input.reason || "manual-verify";
+  if (input.allowMissingEvidence !== true) {
+    await assertNodeEvidenceExists(knowledgeRoot, nodeId);
+  }
+  const { node } = await updateKnowledgeNode(knowledgeRoot, nodeId, {
+    last_verified_at: verifiedAt,
+    verified_reason: reason,
+    verified_at: new Date().toISOString()
+  });
+
+  if (input.rebuildGraph !== false) {
+    const graphArtifacts = await buildProjectGraphArtifacts(knowledgeRoot);
+    await refreshObsidianVault(knowledgeRoot, {
+      graph: graphArtifacts.graph,
+      event: createLogEvent("pk:govern:verify", `验证知识节点 ${nodeId}`, {
+        reason,
+        last_verified_at: verifiedAt
+      })
+    });
+  }
+
+  return {
+    type: "verify",
+    node_id: nodeId,
+    path: node.source_path,
+    last_verified_at: verifiedAt,
+    reason
+  };
+}
+
+async function assertNodeEvidenceExists(knowledgeRoot, nodeId) {
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const node = graph.nodes.find((item) => item.id === nodeId);
+  if (!node) {
+    throw new Error(`未找到知识节点: ${nodeId}`);
+  }
+
+  const evidencePolicy = await loadEvidencePolicy(knowledgeRoot);
+  const inspection = await inspectEvidencePaths(path.dirname(knowledgeRoot), node.source_evidence || [], evidencePolicy);
+  if (inspection.missingSourceEvidence.length > 0) {
+    throw new Error(`缺失证据路径: ${inspection.missingSourceEvidence.join(", ")}`);
+  }
+}
+
+export async function archiveKnowledgeNode(projectRootOrKnowledgeRoot, input = {}) {
+  const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
+  const nodeId = validateNodeId(input.nodeId);
+  const reason = input.reason || "manual-archive";
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const node = graph.nodes.find((item) => item.id === nodeId);
+  if (!node) {
+    throw new Error(`未找到知识节点: ${nodeId}`);
+  }
+
+  const action = await moveNodeToMaturity(knowledgeRoot, node, "incubating", {
+    status: "archived",
+    archive_reason: reason,
+    archived_at: new Date().toISOString()
+  });
+
+  if (input.rebuildGraph !== false) {
+    const graphArtifacts = await buildProjectGraphArtifacts(knowledgeRoot);
+    await refreshObsidianVault(knowledgeRoot, {
+      graph: graphArtifacts.graph,
+      event: createLogEvent("pk:govern:archive", `归档知识节点 ${nodeId}`, {
+        reason
+      })
+    });
+  }
+
+  return {
+    ...action,
+    type: "archive",
+    node_id: nodeId,
+    reason
+  };
+}
+
+export async function linkDuplicateKnowledgeNode(projectRootOrKnowledgeRoot, input = {}) {
+  const duplicateOf = validateNodeId(input.duplicateOf);
+  const action = await rejectKnowledgeNode(projectRootOrKnowledgeRoot, {
+    nodeId: input.nodeId,
+    reason: input.reason || `duplicate-of-${duplicateOf}`,
+    duplicateOf,
+    actionType: "link-duplicate",
+    rebuildGraph: false
+  });
+  const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
+
+  if (input.rebuildGraph !== false) {
+    const graphArtifacts = await buildProjectGraphArtifacts(knowledgeRoot);
+    await refreshObsidianVault(knowledgeRoot, {
+      graph: graphArtifacts.graph,
+      event: createLogEvent("pk:govern:link-duplicate", `标记重复知识节点 ${action.node_id}`, {
+        reason: action.reason,
+        duplicate_of: duplicateOf
+      })
+    });
+  }
+
+  return {
+    ...action,
+    type: "link-duplicate",
+    duplicate_of: duplicateOf
+  };
+}
+
+function planPromoteNode(node) {
+  return {
+    type: "promote",
+    node_id: node.id,
+    from: node.source_path,
+    to: resolveRelativeNodePath({ ...node, maturity: "stable" }),
+    reason: "adopted-threshold-met"
+  };
+}
+
+function planRejectKnowledgeNode(node, input = {}) {
+  const actionType = input.actionType || (node.maturity === "stable" ? "demote" : "reject");
+  return {
+    type: actionType,
+    node_id: node.id,
+    from: node.source_path,
+    to: resolveRelativeNodePath({ ...node, maturity: "incubating" }),
+    reason: input.reason || "manual-reject"
+  };
+}
+
+function planRejectDuplicateNode(nodeMap, issue) {
+  const left = nodeMap.get(issue.node_id);
+  const right = nodeMap.get(issue.duplicate_node_id);
+  if (!left || !right) {
+    return null;
+  }
+
+  const [winner, loser] = pickDuplicateWinner(left, right);
+  if (loser.review_status === "rejected") {
+    return null;
+  }
+
+  return {
+    ...planRejectKnowledgeNode(loser, {
+      reason: `duplicate-of-${winner.id}`,
+      actionType: "reject-duplicate"
+    }),
+    type: "reject-duplicate",
+    duplicate_of: winner.id
+  };
+}
+
+function resolveRelativeNodePath(node) {
+  const directory = node.maturity === "incubating" ? `incubating/${node.type}s` : `${node.type}s`;
+  return `${directory}/${node.id}.md`;
+}
 async function promoteNode(knowledgeRoot, node) {
   const action = await moveNodeToMaturity(knowledgeRoot, node, "stable", {
     maturity: "stable",
@@ -214,6 +393,29 @@ async function moveNodeToMaturity(knowledgeRoot, node, maturity, updates = {}) {
   };
 }
 
+async function updateKnowledgeNode(knowledgeRoot, nodeId, updates = {}) {
+  const graph = await buildProjectGraphFromDirectory(knowledgeRoot);
+  const node = graph.nodes.find((item) => item.id === nodeId);
+  if (!node) {
+    throw new Error(`未找到知识节点: ${nodeId}`);
+  }
+
+  const nodePath = path.join(knowledgeRoot, node.source_path);
+  const source = await fs.readFile(nodePath, "utf8");
+  const { data, body } = parseFrontmatterBlock(source);
+  const nextData = cleanupFrontmatter({
+    ...data,
+    ...updates
+  });
+
+  await fs.writeFile(nodePath, renderMarkdownDocument(nextData, body), "utf8");
+
+  return {
+    node,
+    path: path.relative(knowledgeRoot, nodePath).replace(/\\/g, "/")
+  };
+}
+
 function cleanupFrontmatter(data) {
   return Object.fromEntries(
     Object.entries(data).filter(([, value]) => value !== undefined && value !== null)
@@ -305,6 +507,42 @@ function validateNodeId(nodeId) {
   return value;
 }
 
+function normalizeDateInput(value) {
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 10);
+  }
+  const rawValue = String(value || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(rawValue)) {
+    return rawValue;
+  }
+  const date = new Date(rawValue);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`非法验证日期: ${value}`);
+  }
+  return date.toISOString().slice(0, 10);
+}
+
+function parseGovernCliArgs(args) {
+  const filteredArgs = [];
+  let dryRun = true;
+
+  for (const arg of args) {
+    if (arg === "--apply") {
+      dryRun = false;
+      continue;
+    }
+    if (arg === "--dry-run") {
+      dryRun = true;
+      continue;
+    }
+    filteredArgs.push(arg);
+  }
+
+  return {
+    projectRoot: filteredArgs[0] || process.cwd(),
+    options: { dryRun }
+  };
+}
 async function exists(filePath) {
   try {
     await fs.access(filePath);
@@ -315,6 +553,12 @@ async function exists(filePath) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === currentFilePath) {
-  const result = await governProjectKnowledge(process.argv[2] || process.cwd());
+  const { projectRoot, options } = parseGovernCliArgs(process.argv.slice(2));
+  const result = await governProjectKnowledge(projectRoot, options);
   console.log(JSON.stringify(result, null, 2));
 }
+
+
+
+
+

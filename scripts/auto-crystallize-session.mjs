@@ -9,6 +9,7 @@ import { promisify } from "node:util";
 import { crystallizeSession } from "./crystallize-session.mjs";
 import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
 import { runPreflight } from "./preflight-session.mjs";
+import { loadTaskContext } from "./task-adapters.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -18,32 +19,35 @@ export async function autoCrystallizeSession(projectRootOrKnowledgeRoot, input =
     return buildNoKnowledgeResult(target);
   }
 
-  const taskText = buildTaskText(input);
+  const taskContext = await loadTaskContext(target.projectRoot, input);
+  const mergedInput = mergeTaskContextInput(input, taskContext);
+  const taskText = buildTaskText(mergedInput);
   const evidencePolicy = await loadEvidencePolicy(target.knowledgeRoot);
-  const touchedFiles = await resolveTouchedFiles(target.projectRoot, input, evidencePolicy);
+  const evidenceResolution = await resolveTouchedFiles(target.projectRoot, mergedInput, evidencePolicy);
+  const touchedFiles = evidenceResolution.touchedFiles;
   const preflight = await runPreflight(target.projectRoot, taskText);
-  const adoptedNodeIds = Array.isArray(input.adoptedNodeIds)
-    ? dedupeValues(input.adoptedNodeIds)
+  const adoptedNodeIds = Array.isArray(mergedInput.adoptedNodeIds)
+    ? dedupeValues(mergedInput.adoptedNodeIds)
     : inferAdoptedNodeIds(preflight);
-  const incubatingNodes = Array.isArray(input.incubatingNodes)
-    ? input.incubatingNodes
+  const incubatingNodes = Array.isArray(mergedInput.incubatingNodes)
+    ? mergedInput.incubatingNodes
     : buildIncubatingNodes({
-      input,
+      input: mergedInput,
       taskText,
       touchedFiles,
       preflightMode: preflight.mode
     });
 
   const crystallizeInput = {
-    ...input,
-    title: input.title || "自动知识结晶",
-    topic: input.topic || taskText || "auto-crystallize",
+    ...mergedInput,
+    title: mergedInput.title || "自动知识结晶",
+    topic: mergedInput.topic || taskText || "auto-crystallize",
     taskText,
-    decisionSummary: input.decisionSummary || taskText || "自动记录本轮任务知识沉淀。",
+    decisionSummary: mergedInput.decisionSummary || taskText || "自动记录本轮任务知识沉淀。",
     touchedFiles,
     adoptedNodeIds,
     incubatingNodes,
-    stableUpdates: input.stableUpdates || []
+    stableUpdates: mergedInput.stableUpdates || []
   };
   const result = await crystallizeSession(target.projectRoot, crystallizeInput);
 
@@ -51,7 +55,11 @@ export async function autoCrystallizeSession(projectRootOrKnowledgeRoot, input =
     ...result,
     auto: {
       preflightMode: preflight.mode,
+      evidenceSource: evidenceResolution.source,
+      evidenceConfidence: evidenceResolution.confidence,
       touchedFiles,
+      taskText,
+      taskContext,
       inferredAdoptedNodeIds: adoptedNodeIds,
       generatedIncubatingNodeIds: incubatingNodes.map((node) => node.id)
     }
@@ -138,6 +146,8 @@ function buildNoKnowledgeResult(target) {
     adoptedNodeIds: [],
     auto: {
       preflightMode: "no-knowledge",
+      evidenceSource: "none",
+      evidenceConfidence: "none",
       touchedFiles: [],
       inferredAdoptedNodeIds: [],
       generatedIncubatingNodeIds: []
@@ -159,10 +169,55 @@ function buildTaskText(input) {
 
 async function resolveTouchedFiles(projectRoot, input, evidencePolicy) {
   if (Array.isArray(input.touchedFiles) && input.touchedFiles.length > 0) {
-    return normalizeTouchedFiles(input.touchedFiles, evidencePolicy);
+    return buildEvidenceResolution("explicit", "high", input.touchedFiles, evidencePolicy);
   }
 
-  return normalizeTouchedFiles(await collectGitTouchedFiles(projectRoot), evidencePolicy);
+  if (Array.isArray(input.candidateEvidenceHints) && input.candidateEvidenceHints.length > 0) {
+    return buildEvidenceResolution("task-context", "medium", input.candidateEvidenceHints, evidencePolicy);
+  }
+
+  if (input.allowGitStatusFallback === true) {
+    return buildEvidenceResolution("git-status", "low", await collectGitTouchedFiles(projectRoot), evidencePolicy);
+  }
+
+  return buildEvidenceResolution("none", "none", [], evidencePolicy);
+}
+
+function buildEvidenceResolution(source, confidence, files, evidencePolicy) {
+  return {
+    source,
+    confidence,
+    touchedFiles: normalizeTouchedFiles(files, evidencePolicy)
+  };
+}
+
+function mergeTaskContextInput(input, taskContext) {
+  if (!taskContext || !taskContext.taskText) {
+    return input;
+  }
+
+  return {
+    ...input,
+    title: input.title || taskContext.title || undefined,
+    topic: input.topic || taskContext.topic || undefined,
+    decisionSummary: input.decisionSummary || taskContext.decisionSummary || undefined,
+    taskText: buildMergedTaskText(input.taskText, taskContext.taskText),
+    candidateEvidenceHints: Array.isArray(input.candidateEvidenceHints) && input.candidateEvidenceHints.length > 0
+      ? input.candidateEvidenceHints
+      : taskContext.candidateEvidenceHints,
+    processSources: dedupeValues([
+      ...(input.processSources || []),
+      ...(taskContext.processSources || [])
+    ])
+  };
+}
+
+function buildMergedTaskText(inputTaskText, taskContextText) {
+  return [inputTaskText, taskContextText]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
 }
 
 async function collectGitTouchedFiles(projectRoot) {
@@ -431,3 +486,6 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const result = await autoCrystallizeSession(projectRoot, input);
   console.log(JSON.stringify(result, null, 2));
 }
+
+
+

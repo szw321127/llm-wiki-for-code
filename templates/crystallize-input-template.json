@@ -7,6 +7,7 @@
   "decisionSummary": "一句话总结本轮关键决策。",
   "touchedFiles": [],
   "adoptedNodeIds": [],
+  "rejectedNodeIds": [],
   "incubatingNodes": [],
   "stableUpdates": []
 }

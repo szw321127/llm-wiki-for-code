@@ -207,6 +207,92 @@ test("crystallize CLI accepts a JSON input file for adopted and incubating updat
   assert.match(incubatingView, /\[\[option-cli-json-status-layer\]\]/);
 });
 
+test("crystallizeSession preserves structured source evidence records", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-crystallize-rich-evidence-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+
+  const result = await crystallizeSession(projectRoot, {
+    sessionId: "session-2026-04-23-rich-evidence",
+    title: "Rich evidence crystallization",
+    topic: "rich-evidence",
+    decisionSummary: "Record structured evidence metadata.",
+    incubatingNodes: [
+      {
+        id: "option-rich-evidence-crystallized",
+        type: "option",
+        title: "Rich Evidence Crystallized",
+        summary: "Structured evidence should survive Markdown writing.",
+        practice: "practice-http-client",
+        base_score: 47,
+        score_breakdown: {
+          consistency: 9,
+          efficiency: 9,
+          maintainability: 9,
+          extensibility: 10,
+          risk: 10
+        },
+        keywords: ["evidence"],
+        source_evidence: [
+          "src/api/client.ts",
+          {
+            path: "src/runtime/scheduler.ts",
+            symbol: "createScheduler",
+            reason: "Demonstrates project-wide scheduler boundary.",
+            observed_pattern: "Scheduler starts after login/user readiness.",
+            stability: "stable",
+            last_verified_at: "2026-05-15"
+          }
+        ]
+      }
+    ]
+  });
+  const written = await fs.readFile(
+    path.join(
+      projectRoot,
+      ".project-knowledge",
+      "incubating",
+      "options",
+      "option-rich-evidence-crystallized.md"
+    ),
+    "utf8"
+  );
+
+  assert.equal(result.mode, "session+incubating");
+  assert.match(written, /- src\/api\/client\.ts/);
+  assert.match(written, /- path: src\/runtime\/scheduler\.ts/);
+  assert.match(written, /symbol: createScheduler/);
+  assert.match(written, /reason: Demonstrates project-wide scheduler boundary\./);
+});
+
+test("crystallizeSession records rejected nodes after preflight hits", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-crystallize-rejected-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+
+  const result = await crystallizeSession(projectRoot, {
+    sessionId: "session-2026-05-15-rejected-after-hit",
+    title: "Rejected preflight recommendation",
+    topic: "rejected-after-hit",
+    decisionSummary: "Rejected a preflight recommendation after review.",
+    rejectedNodeIds: ["option-direct-call"]
+  });
+  const usageIndex = JSON.parse(
+    await fs.readFile(
+      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      "utf8"
+    )
+  );
+
+  assert.equal(result.mode, "session+stable-update");
+  assert.deepEqual(result.rejectedNodeIds, ["option-direct-call"]);
+  assert.equal(usageIndex["option-direct-call"].rejected_after_hit_count, 1);
+  assert.equal(usageIndex["option-direct-call"].last_used_at, "2026-05-15");
+  assert.equal(usageIndex["option-direct-call"].last_session_id, "session-2026-05-15-rejected-after-hit");
+});
+
 async function fileExists(filePath) {
   try {
     await fs.access(filePath);

@@ -15,8 +15,10 @@ Treat this skill as the preferred task-end entrypoint when the user wants the pr
 - If `.project-knowledge/project-profile.md` is missing, return `mode: no-knowledge` and skip crystallization entirely; do not scan touched files, create sessions, or create `.project-knowledge/`.
 - Prefer passing a JSON input file after the project path when the task summary, touched files, or session id are known.
 - If `adoptedNodeIds` is omitted, allow the script to infer adopted recommended options from `pk-preflight` matches.
+- Prefer explicit `touchedFiles`; `allowGitStatusFallback` must be true before dirty git status is used as low-confidence evidence.
+- Accept `taskId` or `taskDir` for generic task/process context. Prefer `.tasks/<taskId>` or `tasks/<taskId>`; compatible external workflow layouts such as `.trellis/tasks/<taskId>` are fallback inputs only. Treat process files as process sources and task text, not durable source evidence unless the project evidence policy explicitly allows them.
 - If `incubatingNodes` is omitted and no practice matches, allow the script to create an incubating practice plus candidate option from `taskText` and `touchedFiles`.
-- Report the result in Chinese and include `mode`, inferred adopted nodes, generated incubating nodes, touched files, and the next suggested skill `pk-lint`; when skipped because knowledge is uninitialized, suggest `pk-init` instead.
+- Report the result in Chinese and include `mode`, inferred adopted nodes, generated incubating nodes, touched files, task/process sources when present, and the next suggested skill `pk-lint`; when skipped because knowledge is uninitialized, suggest `pk-init` instead.
 
 ## JSON Input Shape
 
@@ -26,10 +28,17 @@ Treat this skill as the preferred task-end entrypoint when the user wants the pr
   "title": "本轮任务标题",
   "topic": "本轮任务主题",
   "taskText": "用于匹配已有实践的任务描述",
+  "taskId": "",
+  "taskDir": "",
   "decisionSummary": "一句话总结本轮关键决策。",
   "touchedFiles": [],
+  "allowGitStatusFallback": false,
   "adoptedNodeIds": [],
+  "rejectedNodeIds": [],
   "incubatingNodes": [],
   "stableUpdates": []
 }
 ```
+
+
+

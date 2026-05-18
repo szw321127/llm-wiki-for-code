@@ -4,8 +4,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { buildProjectGraphFromDirectory } from "./knowledge-lib.mjs";
-import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
+import { buildProjectGraphFromDirectory, normalizeUsageEntry } from "./knowledge-lib.mjs";
+import { filterExistingEvidencePaths, loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
 import { scanProject } from "./scan-project.mjs";
 
 const CHINESE_MATCH_PHRASES = [
@@ -41,6 +41,7 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
   const target = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
   const resolved = await resolveProjectKnowledge(target);
   const limits = normalizePreflightLimits(options);
+  const taskIntent = extractTaskIntent(taskText, options);
 
   if (!resolved.hasKnowledge) {
     return emptyPreflightResult({
@@ -59,31 +60,47 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
     graph.project_views.find((view) => !view.synthetic)?.id ||
     graph.project_views[0]?.id ||
     "global";
-  const matchedPractices = graph.nodes
+  const matchedPracticeMatches = graph.nodes
     .filter((node) => node.type === "practice")
-    .map((node) => ({ node, score: scoreTaskMatch(node, taskText) }))
+    .map((node) => scorePracticeMatch(node, taskText, taskIntent))
     .filter((match) => match.score > 0)
     .sort((left, right) => right.score - left.score || left.node.title.localeCompare(right.node.title, "zh-Hans-CN"))
-    .slice(0, limits.maxMatchedPractices)
-    .map((match) => summarizePractice(match.node, viewId, limits, evidencePolicy));
+    .slice(0, limits.maxMatchedPractices);
+  const matchedPractices = await Promise.all(
+    matchedPracticeMatches.map((match) =>
+      summarizePractice(match.node, viewId, limits, evidencePolicy, resolved.projectRoot, match.reasons)
+    )
+  );
 
   if (matchedPractices.length > 0) {
-    const recommendedOptions = collectRecommendedOptions(
+    const recommendedOptions = await collectRecommendedOptions(
       matchedPractices,
       nodeMap,
       viewId,
       limits,
-      evidencePolicy
+      evidencePolicy,
+      resolved.projectRoot
     );
     const evidenceHintResult = collectEvidenceHintsFromNodes(
       [...matchedPractices, ...recommendedOptions],
       limits
     );
+    if (options.recordHits === true) {
+      await recordPreflightHits(
+        resolved.knowledgeRoot,
+        [
+          ...matchedPractices.map((practice) => practice.id),
+          ...recommendedOptions.map((option) => option.id)
+        ],
+        options
+      );
+    }
     return {
       mode: "knowledge-hit",
       projectRoot: resolved.projectRoot,
       knowledgeRoot: resolved.knowledgeRoot,
       taskText,
+      taskIntent,
       limits,
       matchedPractices,
       recommendedOptions,
@@ -101,6 +118,7 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
     projectRoot: resolved.projectRoot,
     knowledgeRoot: resolved.knowledgeRoot,
     taskText,
+    taskIntent,
     limits,
     matchedPractices: [],
     recommendedOptions: [],
@@ -169,10 +187,31 @@ function emptyPreflightResult({ mode, projectRoot, knowledgeRoot, taskText, limi
   };
 }
 
-function scoreTaskMatch(node, taskText) {
+function scorePracticeMatch(node, taskText, taskIntent) {
+  const excludedReasons = collectApplicabilityReasons(
+    node.does_not_apply_when,
+    taskIntent,
+    "exclude"
+  );
+  if (excludedReasons.length > 0) {
+    return { node, score: 0, reasons: [] };
+  }
+
+  const lexicalMatch = scoreLexicalTaskMatch(node, taskText);
+  const appliesReasons = collectApplicabilityReasons(node.applies_when, taskIntent);
+  const score = lexicalMatch.score + appliesReasons.length * 4;
+
+  return {
+    node,
+    score,
+    reasons: dedupeValues([...lexicalMatch.reasons, ...appliesReasons])
+  };
+}
+
+function scoreLexicalTaskMatch(node, taskText) {
   const taskTerms = tokenize(taskText);
   if (taskTerms.length === 0) {
-    return 0;
+    return { score: 0, reasons: [] };
   }
 
   const nodeText = normalizeText([
@@ -182,13 +221,146 @@ function scoreTaskMatch(node, taskText) {
     ...(node.keywords || [])
   ].join(" "));
 
-  return taskTerms.reduce((score, term) => {
+  return taskTerms.reduce((result, term) => {
     if (nodeText.includes(term)) {
       const keywordMatch = (node.keywords || []).some((keyword) => normalizeText(keyword) === term);
-      return score + (keywordMatch ? 3 : 1);
+      result.score += keywordMatch ? 3 : 1;
+      result.reasons.push(`${keywordMatch ? "keyword" : "text"}:${term}`);
     }
-    return score;
-  }, 0);
+    return result;
+  }, { score: 0, reasons: [] });
+}
+
+export function extractTaskIntent(taskText = "", options = {}) {
+  const normalized = normalizePathLikeText(taskText);
+  return {
+    taskKinds: dedupeValues([
+      ...detectTaskKinds(normalized),
+      ...asArray(options.taskKinds)
+    ]),
+    technologies: dedupeValues([
+      ...detectTechnologies(normalized),
+      ...asArray(options.technologies)
+    ]),
+    pathHints: dedupeValues([
+      ...detectPathHints(taskText),
+      ...asArray(options.pathHints)
+    ]),
+    operationHints: dedupeValues([
+      ...detectOperationHints(normalized),
+      ...asArray(options.operationHints)
+    ])
+  };
+}
+
+function detectTaskKinds(normalizedText) {
+  const kinds = [];
+
+  if (matchesAny(normalizedText, ["frontend", "page", "页面", "视图", "src/views", "src/pages", ".vue", ".tsx", ".jsx"])) {
+    kinds.push("frontend-page");
+  }
+  if (matchesAny(normalizedText, ["crud", "增删改查", "列表", "list", "table", "表格"])) {
+    kinds.push("crud-list");
+  }
+  if (matchesAny(normalizedText, ["api client", "http client", "request client", "src/api", "接口调用", "请求封装"])) {
+    kinds.push("api-client");
+  }
+  if (matchesAny(normalizedText, ["config", "配置", "env", "环境变量"])) {
+    kinds.push("config");
+  }
+  if (matchesAny(normalizedText, ["test", "tests/", ".test.", ".spec.", "测试", "单元测试"])) {
+    kinds.push("test");
+  }
+  if (matchesAny(normalizedText, ["govern", "lint", "治理", "wiki", "knowledge"])) {
+    kinds.push("governance");
+  }
+
+  return kinds;
+}
+
+function detectTechnologies(normalizedText) {
+  const technologies = [];
+  if (matchesAny(normalizedText, ["vue", ".vue"])) {
+    technologies.push("vue");
+  }
+  if (matchesAny(normalizedText, ["react", ".tsx", ".jsx"])) {
+    technologies.push("react");
+  }
+  if (matchesAny(normalizedText, ["node", "node.js", "npm"])) {
+    technologies.push("node");
+  }
+  if (matchesAny(normalizedText, ["typescript", ".ts", ".tsx"])) {
+    technologies.push("typescript");
+  }
+  return technologies;
+}
+
+function detectPathHints(taskText) {
+  return dedupeValues(
+    Array.from(String(taskText || "").matchAll(/(?:^|[\s"'`(])((?:[A-Za-z]:[\\/])?[\w@.-]+(?:[\\/][\w@.-]+)+)/g))
+      .map((match) => normalizePathHint(match[1]))
+      .filter(Boolean)
+  );
+}
+
+function detectOperationHints(normalizedText) {
+  const operations = [];
+  if (matchesAny(normalizedText, ["add", "create", "new", "新增", "创建", "实现"])) {
+    operations.push("create");
+  }
+  if (matchesAny(normalizedText, ["modify", "update", "change", "调整", "修改", "更新"])) {
+    operations.push("modify");
+  }
+  if (matchesAny(normalizedText, ["review", "审查", "检查"])) {
+    operations.push("review");
+  }
+  if (matchesAny(normalizedText, ["debug", "fix", "bug", "修复", "排查"])) {
+    operations.push("debug");
+  }
+  return operations;
+}
+
+function collectApplicabilityReasons(applicability = {}, taskIntent = {}, mode = "include") {
+  const reasons = [];
+  const prefix = mode === "exclude" ? "excluded-" : "";
+
+  for (const taskKind of asArray(applicability.task_kinds)) {
+    if (asArray(taskIntent.taskKinds).includes(taskKind)) {
+      reasons.push(`${prefix}task-kind:${taskKind}`);
+    }
+  }
+
+  for (const technology of asArray(applicability.technologies)) {
+    if (asArray(taskIntent.technologies).includes(technology)) {
+      reasons.push(`${prefix}technology:${technology}`);
+    }
+  }
+
+  for (const pathPrefix of asArray(applicability.path_prefixes)) {
+    const normalizedPrefix = normalizePathHint(pathPrefix);
+    if (
+      normalizedPrefix &&
+      asArray(taskIntent.pathHints).some(
+        (pathHint) => pathHint === normalizedPrefix || pathHint.startsWith(`${normalizedPrefix}/`)
+      )
+    ) {
+      reasons.push(`${prefix}path-prefix:${normalizedPrefix}`);
+    }
+  }
+
+  return reasons;
+}
+
+function matchesAny(value, needles) {
+  return needles.some((needle) => value.includes(needle));
+}
+
+function normalizePathLikeText(value) {
+  return normalizeText(value).replace(/\\/g, "/");
+}
+
+function normalizePathHint(value) {
+  return normalizePathLikeText(value).replace(/^["'`(]+|[)"'`,.]+$/g, "");
 }
 
 function tokenize(value) {
@@ -210,8 +382,60 @@ function dedupeValues(values) {
   return Array.from(new Set((values || []).filter(Boolean)));
 }
 
-function summarizePractice(node, viewId, limits, evidencePolicy) {
-  const evidence = summarizeEvidence(node.source_evidence || [], limits, evidencePolicy);
+function asArray(value) {
+  if (!value) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+}
+
+async function recordPreflightHits(knowledgeRoot, nodeIds, options = {}) {
+  const uniqueNodeIds = dedupeValues(nodeIds);
+  if (uniqueNodeIds.length === 0) {
+    return;
+  }
+
+  const usagePath = path.join(knowledgeRoot, "state", "usage-index.json");
+  const rawUsage = await readJson(usagePath, {});
+  const usageIndex = rawUsage.entries || rawUsage;
+  const hitDate = extractDate(options.now || new Date());
+
+  for (const nodeId of uniqueNodeIds) {
+    const entry = normalizeUsageEntry(usageIndex[nodeId]);
+    entry.preflight_hits += 1;
+    entry.last_hit_at = hitDate;
+    usageIndex[nodeId] = entry;
+  }
+
+  await fs.mkdir(path.dirname(usagePath), { recursive: true });
+  await fs.writeFile(usagePath, `${JSON.stringify(usageIndex, null, 2)}\n`, "utf8");
+}
+
+function extractDate(value) {
+  const directMatch = String(value || "").match(/\d{4}-\d{2}-\d{2}/);
+  if (directMatch) {
+    return directMatch[0];
+  }
+
+  const date = value ? new Date(value) : new Date();
+  return Number.isNaN(date.getTime())
+    ? new Date().toISOString().slice(0, 10)
+    : date.toISOString().slice(0, 10);
+}
+
+async function readJson(filePath, fallbackValue) {
+  try {
+    return JSON.parse(await fs.readFile(filePath, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return fallbackValue;
+    }
+    throw error;
+  }
+}
+
+async function summarizePractice(node, viewId, limits, evidencePolicy, projectRoot, matchReasons = []) {
+  const evidence = await summarizeEvidence(node.source_evidence || [], limits, evidencePolicy, projectRoot);
   return {
     id: node.id,
     title: node.title,
@@ -220,13 +444,14 @@ function summarizePractice(node, viewId, limits, evidencePolicy) {
     source_path: node.source_path,
     recommendation_pool: node.recommendation_pools?.[viewId] || node.recommendation_pools?.global || [],
     recommended_option: node.recommended_options?.[viewId] || node.recommended_options?.global || null,
+    matchReasons,
     source_evidence: evidence.preview,
     source_evidence_count: evidence.totalCount,
     source_evidence_truncated: evidence.truncated
   };
 }
 
-function collectRecommendedOptions(practices, nodeMap, viewId, limits, evidencePolicy) {
+async function collectRecommendedOptions(practices, nodeMap, viewId, limits, evidencePolicy, projectRoot) {
   const options = [];
   const seen = new Set();
 
@@ -241,15 +466,15 @@ function collectRecommendedOptions(practices, nodeMap, viewId, limits, evidenceP
         continue;
       }
       seen.add(optionId);
-      options.push(summarizeOption(option, viewId, practice.id, limits, evidencePolicy));
+      options.push(await summarizeOption(option, viewId, practice.id, limits, evidencePolicy, projectRoot));
     }
   }
 
   return options;
 }
 
-function summarizeOption(node, viewId, practiceId, limits, evidencePolicy) {
-  const evidence = summarizeEvidence(node.source_evidence || [], limits, evidencePolicy);
+async function summarizeOption(node, viewId, practiceId, limits, evidencePolicy, projectRoot) {
+  const evidence = await summarizeEvidence(node.source_evidence || [], limits, evidencePolicy, projectRoot);
   return {
     id: node.id,
     title: node.title,
@@ -266,8 +491,8 @@ function summarizeOption(node, viewId, practiceId, limits, evidencePolicy) {
   };
 }
 
-function summarizeEvidence(sourceEvidence, limits, evidencePolicy) {
-  const values = normalizeEvidencePaths(sourceEvidence || [], evidencePolicy);
+async function summarizeEvidence(sourceEvidence, limits, evidencePolicy, projectRoot) {
+  const values = await filterExistingEvidencePaths(projectRoot, sourceEvidence || [], evidencePolicy);
   const preview = values.slice(0, limits.maxEvidencePerNode);
   return {
     preview,
@@ -369,8 +594,28 @@ async function exists(filePath) {
   }
 }
 
+export function parsePreflightCliArgs(argv = []) {
+  const positional = [];
+  const options = {};
+
+  for (const arg of argv) {
+    if (arg === "--record-hits") {
+      options.recordHits = true;
+      continue;
+    }
+    positional.push(arg);
+  }
+
+  const [targetPath, ...taskParts] = positional;
+  return {
+    targetPath,
+    taskText: taskParts.join(" "),
+    options
+  };
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const [targetPath, ...taskParts] = process.argv.slice(2);
-  const result = await runPreflight(targetPath || process.cwd(), taskParts.join(" "));
+  const { targetPath, taskText, options } = parsePreflightCliArgs(process.argv.slice(2));
+  const result = await runPreflight(targetPath || process.cwd(), taskText, options);
   console.log(JSON.stringify(result, null, 2));
 }

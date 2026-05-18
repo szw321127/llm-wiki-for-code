@@ -1,0 +1,6 @@
+{
+  "id": "http-client-retry",
+  "title": "Add HTTP client retry policy",
+  "summary": "Centralize retry handling in the shared HTTP client.",
+  "status": "done"
+}

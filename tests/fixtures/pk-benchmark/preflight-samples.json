@@ -1,0 +1,32 @@
+{
+  "thresholds": {
+    "minRecallAtK": 1,
+    "minPrecisionAtK": 0.6,
+    "maxFalsePositiveRate": 0
+  },
+  "samples": [
+    {
+      "id": "http-client-page",
+      "task": "页面里需要实现 http request client",
+      "expectedNodeIds": ["practice-http-client", "option-unified-client"],
+      "allowedNodeIds": ["option-direct-call"]
+    },
+    {
+      "id": "frontend-http-call",
+      "task": "新增前端页面时，需要通过统一 HTTP 调用封装读取订单数据",
+      "expectedNodeIds": ["practice-http-client", "option-unified-client"],
+      "allowedNodeIds": ["context-frontend-page", "rule-use-unified-client", "option-direct-call"]
+    },
+    {
+      "id": "native-direct-call-comparison",
+      "task": "评估是否可以在局部直接原生调用 fetch，而不是走统一调用封装",
+      "expectedNodeIds": ["practice-http-client", "option-direct-call"],
+      "allowedNodeIds": ["option-unified-client", "rule-use-unified-client"]
+    },
+    {
+      "id": "readme-copy-update",
+      "task": "整理 README 的安装说明和贡献指南",
+      "expectedNoMatches": true
+    }
+  ]
+}

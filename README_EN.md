@@ -9,7 +9,7 @@ LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durab
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
 </p>
 <p align="center">
-  <a href="README.md">中文文档</a> | English
+  [中文文档](README.md) | English
 </p>
 
 The repository and package name are `llm-wiki-for-code`. The assistant plugin keeps the short name `pk`.
@@ -98,6 +98,21 @@ src/api/client.ts
 src/runtime/scheduler.ts
 ```
 
+It can also be upgraded gradually to structured evidence records; old string paths remain compatible:
+
+```yaml
+source_evidence:
+  - src/api/client.ts
+  - path: src/runtime/scheduler.ts
+    symbol: createScheduler
+    reason: Demonstrates project-wide scheduler boundary.
+    observed_pattern: Scheduler starts after login/user readiness.
+    stability: stable
+    last_verified_at: 2026-05-15
+```
+
+Graph nodes still normalize `source_evidence` to a path array while preserving `symbol`, `reason`, `observed_pattern`, `stability`, and `last_verified_at` in `evidence_records`. Structured evidence on stable nodes should include `reason`; otherwise `pk-lint` reports `wiki-evidence-record-missing-reason`.
+
 The default policy filters common temporary files, local tool state, generated output, and process documents. The README is not the complete hardcoded rule list. Each knowledge base can tune the policy with `.project-knowledge/evidence-policy.json`:
 
 ```json
@@ -120,13 +135,15 @@ Fields:
 
 The policy affects evidence previews in `pk-preflight`, touched files in `pk-auto-crystallize`, `source_evidence` written by `pk-crystallize`, and volatile evidence checks in `pk-lint`.
 
+`pk-lint` also checks whether non-volatile `source_evidence` paths still exist in the project. Broken paths are reported as `node-missing-evidence-path`, with `repair_candidates` when same-basename files can be found. `pk-preflight` does not return missing evidence paths to the AI, and `verifyKnowledgeNode` refuses to refresh `last_verified_at` for nodes with broken evidence by default.
+
 LLM Wiki for Code avoids storing complete code snippets as primary evidence. Preferred evidence is:
 
 - Stable source-relative paths
 - Practice summaries
 - Option summaries
 - Adoption counts
-- Future-friendly metadata such as symbols, hashes, or short summaries when needed
+- Future-friendly metadata such as symbols, reasons, observed patterns, hashes, or short summaries when needed
 
 ## Requirements
 
@@ -363,6 +380,33 @@ To control context size, default output is limited to:
 - Up to 5 evidence previews per node
 - Up to 5 scan hints per category
 
+Beyond keywords, titles, and summaries, preflight also extracts local task intent:
+
+- `taskKinds`: such as `frontend-page`, `crud-list`, `api-client`, `config`, `test`, and `governance`.
+- `technologies`: such as `vue`, `react`, `node`, and `typescript`.
+- `pathHints`: for example `src/views/users/UserList.vue` can match a `src/views` prefix.
+- `operationHints`: such as `create`, `modify`, `review`, and `debug`.
+
+Knowledge nodes can use `applies_when` and `does_not_apply_when` to tune applicability. Matched practices include `matchReasons`, such as `task-kind:frontend-page` or `path-prefix:src/views`.
+
+By default `pk-preflight` is read-only. To record hits in `state/usage-index.json`, explicitly run `npm run pk:preflight -- <project-root> --record-hits "implement HTTP calls"`; this increments `preflight_hits` and updates `last_hit_at`.
+
+### Simulate Whether PK Helps AI
+
+```bash
+npm run pk:benchmark -- <project-root> <benchmark-samples.json> --k 3
+```
+
+The benchmark does not call an AI model. It runs `pk-preflight` against labeled task samples and reports:
+
+- `recallAtK`: whether expected knowledge appears in the top K results.
+- `precisionAtK`: how many top K results are expected or allowed relevant knowledge.
+- `falsePositiveRate`: how often samples marked with `expectedNoMatches: true` still retrieve knowledge.
+- `noiseRate`: how much unrelated knowledge appears in the top K results.
+- `pass`: whether the sample file thresholds were met.
+
+See `tests/fixtures/pk-benchmark/preflight-samples.json` for the sample format. This validates retrieval quality first; full AI usefulness should still be measured with task-level A/B runs.
+
 ### Auto-Crystallize After a Task
 
 ```bash
@@ -387,7 +431,9 @@ Behavior:
 - If the task matches an existing practice, the selected recommendation is recorded as adopted.
 - If no match exists and stable source files changed, an incubating practice and option may be created.
 - If only temporary files, docs, or worktree files changed, only the session is recorded.
-- Explicit `adoptedNodeIds`, `incubatingNodes`, or `stableUpdates` take precedence over inference.
+- Explicit `adoptedNodeIds`, `rejectedNodeIds`, `incubatingNodes`, or `stableUpdates` take precedence over inference.
+- `taskId` or `taskDir` can load generic task/process context; `.tasks/<taskId>` and `tasks/<taskId>` are supported by default, with `.trellis/tasks/<taskId>` kept as compatibility for external workflow layouts. Process files are treated as `processSources` and task text, not long-term `source_evidence` by default; PK does not depend on Trellis.
+- Dirty git status is not used as evidence by default; it is used as low-confidence evidence only when `allowGitStatusFallback: true`.
 
 ### Manually Crystallize Knowledge
 
@@ -395,7 +441,7 @@ Behavior:
 npm run pk:crystallize -- <project-root> <crystallize-input.json>
 ```
 
-Use manual crystallization when you already know which node should be adopted, created, or updated.
+Use manual crystallization when you already know which node should be adopted, rejected after preflight, created, or updated. `rejectedNodeIds` increments `rejected_after_hit_count`, which helps find knowledge that is often retrieved but rejected.
 
 Templates:
 
@@ -414,11 +460,23 @@ The linter reports:
 
 - `node-missing-evidence`: a node has no evidence.
 - `node-volatile-evidence`: a node references temporary or unstable evidence.
+- `node-missing-evidence-path`: a node references evidence paths that no longer exist, with same-basename repair candidates when available.
 - `option-missing-practice`: an option has no valid parent practice.
 - `practice-empty-recommendation-pool`: a practice has no recommended option.
 - `incubating-promotion-candidate`: an incubating node reached the promotion threshold.
 - `recommendation-pool-eviction-candidate`: a practice has more than 3 recommended options.
 - `possible-duplicate-node`: two nodes may represent duplicate knowledge.
+- `wiki-thin-page` / `wiki-oversized-page`: a page is too thin or too large.
+- `wiki-missing-summary` / `wiki-missing-required-section`: stable knowledge lacks an explicit summary or required section.
+- `wiki-bad-title` / `wiki-bad-id` / `wiki-wrong-directory`: title, id, or directory placement violates wiki conventions.
+- `wiki-broken-node-link` / `wiki-orphan-node`: a wiki link is broken, or a node has no graph edge, session ref, or evidence.
+- `wiki-no-preflight-surface`: a node has no keywords, making later `pk-preflight` matching weak.
+- `wiki-missing-session-ref` / `wiki-missing-decision-reason`: a stable option lacks a source session or adoption rationale.
+- `wiki-stale-node` / `wiki-stale-evidence`: a node or its evidence is older than `stale_after_days`.
+- `wiki-high-rank-stale-recommendation`: a high-ranking option in a recommendation pool is stale.
+- `wiki-missing-owner-for-strong-rule` / `wiki-missing-verification-date` / `wiki-invalid-verification-date`: a strong rule lacks ownership or usable verification metadata.
+- `wiki-never-hit` / `wiki-hit-but-never-adopted` / `wiki-frequently-rejected-after-hit`: knowledge was never hit by preflight, was hit repeatedly without adoption, or is often rejected after being hit.
+- `wiki-active-conflicting-rules` / `wiki-superseded-node-still-recommended` / `wiki-duplicate-practice-scope`: active rules conflict, superseded nodes remain in a recommendation surface, or multiple practices claim the same scope.
 
 ### Apply Reversible Governance
 
@@ -426,7 +484,7 @@ The linter reports:
 npm run pk:govern -- <project-root>
 ```
 
-Governance performs only reversible changes:
+By default this command previews governance actions only. To write changes, run `npm run pk:govern -- <project-root> --apply`. Governance performs only reversible changes:
 
 - Promotes eligible incubating nodes.
 - Demotes options outside the top 3 recommendation pool.
@@ -506,3 +564,5 @@ Before publishing:
 ```bash
 npm test
 ```
+
+

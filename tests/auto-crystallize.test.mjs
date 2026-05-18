@@ -12,6 +12,7 @@ import { runPreflight } from "../scripts/preflight-session.mjs";
 const execFileAsync = promisify(execFile);
 
 const fixtureRoot = path.resolve("tests", "fixtures", "sample-project");
+const taskContextFixtureRoot = path.resolve("tests", "fixtures", "task-context-sample");
 
 test("autoCrystallizeSession skips project knowledge when pk-init has not run", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-uninitialized-"));
@@ -293,6 +294,114 @@ test("autoCrystallizeSession applies project evidence policy to touched files an
   assert.doesNotMatch(option, /docs\/tmp|generated\/client/);
 });
 
+
+test("autoCrystallizeSession reports explicit evidence source with high confidence", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-explicit-evidence-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+
+  const result = await autoCrystallizeSession(projectRoot, {
+    sessionId: "session-2026-05-15-explicit-evidence",
+    title: "显式证据来源",
+    topic: "explicit-evidence",
+    taskText: "explicit evidence source",
+    decisionSummary: "本轮显式传入 touched files。",
+    touchedFiles: ["src/runtime/explicitEvidence.ts"]
+  });
+
+  assert.equal(result.auto.evidenceSource, "explicit");
+  assert.equal(result.auto.evidenceConfidence, "high");
+  assert.deepEqual(result.auto.touchedFiles, ["src/runtime/explicitEvidence.ts"]);
+});
+
+test("autoCrystallizeSession does not fall back to git status unless explicitly allowed", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-no-git-fallback-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+  await execFileAsync("git", ["init"], { cwd: projectRoot });
+  await fs.mkdir(path.join(projectRoot, "src", "runtime"), { recursive: true });
+  await fs.writeFile(path.join(projectRoot, "src", "runtime", "dirtyEvidence.ts"), "export const value = true;\n", "utf8");
+
+  const result = await autoCrystallizeSession(projectRoot, {
+    sessionId: "session-2026-05-15-no-git-fallback",
+    title: "不自动读取 git status",
+    topic: "no-git-fallback",
+    taskText: "dirty git status should not become evidence",
+    decisionSummary: "没有显式允许时，不把 dirty worktree 当证据。",
+    allowGitStatusFallback: false
+  });
+
+  assert.equal(result.mode, "session-only");
+  assert.equal(result.auto.evidenceSource, "none");
+  assert.equal(result.auto.evidenceConfidence, "none");
+  assert.deepEqual(result.auto.touchedFiles, []);
+  assert.deepEqual(result.incubatingNodeIds, []);
+});
+
+test("autoCrystallizeSession uses git status fallback only when explicitly allowed", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-git-fallback-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+  await execFileAsync("git", ["init"], { cwd: projectRoot });
+  await fs.mkdir(path.join(projectRoot, "src", "runtime"), { recursive: true });
+  await fs.writeFile(path.join(projectRoot, "src", "runtime", "gitFallbackEvidence.ts"), "export const value = true;\n", "utf8");
+
+  const result = await autoCrystallizeSession(projectRoot, {
+    sessionId: "session-2026-05-15-git-fallback",
+    title: "显式允许 git status fallback",
+    topic: "git-fallback",
+    taskText: "git status fallback evidence",
+    decisionSummary: "显式允许时才把 dirty worktree 当低置信度证据。",
+    allowGitStatusFallback: true
+  });
+
+  assert.equal(result.auto.evidenceSource, "git-status");
+  assert.equal(result.auto.evidenceConfidence, "low");
+  assert.deepEqual(result.auto.touchedFiles, ["src/runtime/gitFallbackEvidence.ts"]);
+});
+
+test("autoCrystallizeSession can derive task context and evidence hints from a generic task directory", async () => {
+  const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-task-context-"));
+  const projectRoot = path.join(tempRoot, "sample-project");
+  const taskContextRoot = path.join(taskContextFixtureRoot, ".tasks");
+
+  await fs.cp(fixtureRoot, projectRoot, { recursive: true });
+  await fs.cp(taskContextRoot, path.join(projectRoot, ".tasks"), { recursive: true });
+
+  const result = await autoCrystallizeSession(projectRoot, {
+    sessionId: "session-2026-05-15-task-context",
+    taskId: "http-client-retry"
+  });
+
+  assert.equal(result.auto.evidenceSource, "task-context");
+  assert.equal(result.auto.evidenceConfidence, "medium");
+  assert.equal(result.auto.taskContext.topic, "http-client-retry");
+  assert.match(result.auto.taskText, /Add HTTP client retry policy/);
+  assert.match(result.auto.taskText, /Retry policy belongs in `src\/api\/client\.ts`/);
+  assert.deepEqual(result.auto.taskContext.processSources, [
+    ".tasks/http-client-retry/prd.md",
+    ".tasks/http-client-retry/research/retry-policy.md",
+    ".tasks/http-client-retry/implement.jsonl",
+    ".tasks/http-client-retry/check.jsonl",
+    ".tasks/http-client-retry/task.json"
+  ]);
+  assert.deepEqual(result.auto.touchedFiles, [
+    "src/api/client.ts",
+    "src/api/retryPolicy.ts",
+    "src/pages/orders/OrderList.vue"
+  ]);
+
+  const session = await fs.readFile(
+    path.join(projectRoot, ".project-knowledge", "sessions", "session-2026-05-15-task-context.md"),
+    "utf8"
+  );
+
+  assert.match(session, /src\/api\/client\.ts/);
+  assert.doesNotMatch(session, /\.tasks\/http-client-retry\/prd\.md/);
+});
 test("autoCrystallizeSession generalizes long-running scheduler knowledge beyond business nouns", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-generalized-"));
   const projectRoot = path.join(tempRoot, "sample-project");
@@ -415,3 +524,4 @@ async function fileExists(filePath) {
     return false;
   }
 }
+
