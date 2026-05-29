@@ -9,7 +9,7 @@ LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durab
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
 </p>
 <p align="center">
-  [中文文档](README.md) | English
+  <a href="README.md">中文文档</a> | <a href="README_EN.md">English</a>
 </p>
 
 The repository name is `llm-wiki-for-code`. The user-facing CLI is `repowise`; the current assistant plugin keeps the short name `pk` as a compatibility entrypoint.

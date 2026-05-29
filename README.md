@@ -9,7 +9,7 @@ LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把�
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
 </p>
 <p align="center">
-  中文文档 | [英文文档](README_EN.md)
+  <a href="README.md">中文文档</a> | <a href="README_EN.md">English</a>
 </p>
 
 仓库名是 `llm-wiki-for-code`。面向用户的 CLI 名称是 `repowise`；当前助手插件仍保留短名 `pk` 作为兼容入口。

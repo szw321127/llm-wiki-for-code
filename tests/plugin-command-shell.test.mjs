@@ -56,8 +56,8 @@ test("repository docs expose repowise init as the primary workflow", () => {
   assert.doesNotMatch(readme, /local-project-knowledge/);
   assert.doesNotMatch(readme, /codex:install/);
   assert.doesNotMatch(readme, /\/plugin install pk/);
-  assert.match(readme, /\[英文文档\]\(README_EN\.md\)/);
-  assert.match(englishReadme, /\[中文文档\]\(README\.md\)/);
+  assert.match(readme, /<a href="README\.md">中文文档<\/a> \| <a href="README_EN\.md">English<\/a>/);
+  assert.match(englishReadme, /<a href="README\.md">中文文档<\/a> \| <a href="README_EN\.md">English<\/a>/);
   assert.match(englishReadme, /repowise init/);
   assert.match(englishReadme, /repowise-init/);
   assert.match(englishReadme, /repowise-preflight/);
