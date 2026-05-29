@@ -43,17 +43,28 @@ test("repository exposes a local Codex marketplace for the pk plugin", () => {
   assert.equal(pkPlugin.category, "Productivity");
 });
 
-test("repository docs expose pk as a skill-based workflow", () => {
+test("repository docs expose repowise init as the primary workflow", () => {
   const readme = fs.readFileSync(readmePath, "utf8");
   const englishReadme = fs.readFileSync(englishReadmePath, "utf8");
   const rootSkill = fs.readFileSync(rootSkillPath, "utf8");
 
   assert.doesNotMatch(readme, /\/pk:/);
-  assert.match(readme, /pk-init/);
-  assert.match(readme, /pk-status/);
+  assert.match(readme, /repowise init/);
+  assert.match(readme, /repowise-init/);
+  assert.match(readme, /repowise-preflight/);
+  assert.doesNotMatch(readme, /pk@local-project-knowledge/);
+  assert.doesNotMatch(readme, /local-project-knowledge/);
+  assert.doesNotMatch(readme, /codex:install/);
+  assert.doesNotMatch(readme, /\/plugin install pk/);
   assert.match(readme, /\[英文文档\]\(README_EN\.md\)/);
   assert.match(englishReadme, /\[中文文档\]\(README\.md\)/);
-  assert.match(englishReadme, /pk-init/);
+  assert.match(englishReadme, /repowise init/);
+  assert.match(englishReadme, /repowise-init/);
+  assert.match(englishReadme, /repowise-preflight/);
+  assert.doesNotMatch(englishReadme, /pk@local-project-knowledge/);
+  assert.doesNotMatch(englishReadme, /local-project-knowledge/);
+  assert.doesNotMatch(englishReadme, /codex:install/);
+  assert.doesNotMatch(englishReadme, /\/plugin install pk/);
 
   assert.doesNotMatch(rootSkill, /\/pk:/);
   assert.match(rootSkill, /pk-init/);

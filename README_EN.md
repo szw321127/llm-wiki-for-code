@@ -147,29 +147,68 @@ LLM Wiki for Code avoids storing complete code snippets as primary evidence. Pre
 ## Requirements
 
 - Node.js with native ESM support.
-- npm for running the bundled scripts.
-- Codex or Claude Code only if you want to install the `pk` skills as an assistant plugin.
+- npm for installing and running the CLI.
+- Codex or Claude Code only if you want to install Repowise skills into those assistants; `repowise init` can target either one with flags.
 
 This repository currently relies on Node's built-in test runner and local scripts.
 
 ## Installation
 
-### 1. Clone the Repository
+### 1. Install Globally
+
+```bash
+npm install -g repowise
+```
+
+Then run this from a target project root:
+
+```bash
+repowise init
+```
+
+You can also pass the target project explicitly:
+
+```bash
+repowise init E:\path\to\project
+```
+
+`repowise init` does three things:
+
+- Creates the project knowledge base at `.repowise/`.
+- Installs Codex skills at user level `%USERPROFILE%\.agents\skills\repowise-*` and project level `<project>/.agents/skills/repowise-*`.
+- Installs Claude Code skills at user level `%USERPROFILE%\.claude\skills\repowise-*` and project level `<project>/.claude/skills/repowise-*`.
+
+By default it installs both Codex and Claude Code skills. Common flags:
+
+```bash
+repowise init --codex
+repowise init --claude
+repowise init --no-global
+repowise init --no-project-skills
+repowise init --migrate
+repowise init --force
+```
+
+- `--codex`: install Codex skills only.
+- `--claude`: install Claude Code skills only.
+- `--no-global`: skip user-level skills and write only project-level skills.
+- `--no-project-skills`: skip project-level skills and write only user-level skills.
+- `--migrate`: rename an existing `.project-knowledge/` vault to `.repowise/`.
+- `--force`: overwrite generated Repowise skill/runtime files.
+
+Fully restart Codex / Claude Code after installing or updating skills so the clients refresh their skill indexes.
+
+### 2. Develop This Repository
+
+When changing Repowise itself, clone the repository and run tests:
 
 ```bash
 git clone <repository-url>
 cd <repository-directory>
-```
-
-Run the test suite to confirm the local environment:
-
-```bash
 npm test
 ```
 
-### 2. Use as a Plain CLI
-
-The scripts can be used directly without installing any assistant plugin:
+Development scripts still keep the `pk:*` names as internal compatibility entrypoints:
 
 ```bash
 npm run pk:init -- <project-root>
@@ -177,113 +216,22 @@ npm run pk:preflight -- <project-root> "implement HTTP calls"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 ```
 
-This mode is useful for manual use, CI jobs, or other automation.
-
-### 3. Install for Codex
-
-To use the `pk:*` skills directly inside Codex:
-
-```bash
-npm run codex:install
-```
-
-The installer:
-
-- Creates a local plugin link from the current repository's `plugins/pk/` directory.
-- Writes a `local-project-knowledge` marketplace entry under the user's `.agents/plugins/marketplace.json`.
-- Marks the plugin as `INSTALLED_BY_DEFAULT`.
-
-Fully restart Codex after installation. The skill list should then include:
-
-```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
-```
-
-After updating this repository, run the installer again and fully restart Codex. Local installs may point `~/plugins/pk` at this repository, but the running client can still use startup/plugin cache data until it is restarted:
-
-```bash
-npm run codex:install
-```
-
-Uninstall:
-
-```bash
-npm run codex:uninstall
-```
-
-### 4. Install for Claude Code
-
-Use Claude Code's standard plugin commands:
-
-```bash
-/plugin marketplace add <repository-root>
-/plugin install pk@local-project-knowledge
-```
-
-Example:
-
-```bash
-/plugin marketplace add /path/to/universal-practice-knowledge-graph
-/plugin install pk@local-project-knowledge
-```
-
-This registers the `local-project-knowledge` marketplace and installs the `pk` plugin from `plugins/pk/`.
-
-Fully restart Claude Code after installation. The skill list should include:
-
-```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
-```
-
-Update this plugin after changing or pulling this repository, then fully restart Claude Code. Claude Code installs the plugin into `.claude/plugins/cache/...`, so repository changes are not reflected in an already installed plugin until it is updated:
-
-```bash
-/plugin update pk@local-project-knowledge
-```
-
-Uninstall:
-
-```bash
-/plugin uninstall pk@local-project-knowledge
-```
-
-### 5. Initialize a Target Project
-
-After installing or cloning the tool, opt a target project into the workflow:
-
-```bash
-npm run pk:init -- <project-root>
-```
-
-Or from Codex:
-
-```text
-pk-init
-```
-
-Initialization creates `.repowise/` in the target project. Projects without this directory return `mode: no-knowledge` and skip project-knowledge workflows.
+Regular users should prefer `repowise init`; the old `pk` plugin marketplace is no longer the recommended install path.
 
 ## Quick Start
 
 ```bash
+npm install -g repowise
+cd <project-root>
+repowise init
+```
+
+Initialization creates `.repowise/` in the target project. Projects without this directory return `mode: no-knowledge` and skip project-knowledge workflows.
+
+Agents can then use `repowise-preflight`, `repowise-status`, `repowise-graph`, and related skills. Repository development or CI can still use the local npm scripts:
+
+```bash
 npm test
-npm run pk:init -- <project-root>
 npm run pk:status -- <project-root>
 npm run pk:preflight -- <project-root> "implement HTTP calls"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
@@ -297,42 +245,28 @@ If `<project-root>` is omitted, scripts use the current working directory.
 
 ## Skill Entry Points
 
-The repository ships both a Codex plugin and a Claude Code plugin.
-
-Codex skill names:
+`repowise init` installs the same skill set into Codex and Claude Code according to the selected flags. Skill names are the same in both clients:
 
 ```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
+repowise-init
+repowise-preflight
+repowise-status
+repowise-graph
+repowise-crystallize
+repowise-auto-crystallize
+repowise-lint
+repowise-govern
+repowise-serve
 ```
 
-Claude Code skill names:
-
-```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
-```
+The old `plugins/pk/skills` bundle remains the source skill bundle during this migration; installation copies and rewrites it to `repowise-*` names.
 
 ## Common Workflows
 
 ### Initialize a Knowledge Base
 
 ```bash
-npm run pk:init -- <project-root>
+repowise init <project-root>
 ```
 
 This creates `.repowise/` with:
@@ -527,15 +461,15 @@ Knowledge node files include `Links` sections with `[[node-id]]` references betw
 
 ```text
 .
-|-- .agents/                       # Local Codex marketplace metadata
+|-- .agents/                       # Legacy local marketplace metadata
 |-- .github/                       # GitHub issue and pull request templates
-|-- .claude-plugin/                # Claude Code marketplace metadata
+|-- .claude-plugin/                # Legacy Claude Code plugin metadata
 |-- assets/                        # Project graph frontend assets
 |-- docs/                          # Design and implementation plans
 |-- knowledge/                     # Prototype/global graph data and regression assets
-|-- plugins/pk/                    # Codex and Claude Code plugin package
-|   |-- .codex-plugin/             # Codex plugin manifest
-|   |-- .claude-plugin/            # Claude Code plugin manifest
+|-- plugins/pk/                    # Legacy source skill bundle copied to repowise-* skills by repowise init
+|   |-- .codex-plugin/             # Legacy Codex plugin manifest
+|   |-- .claude-plugin/            # Legacy Claude Code plugin manifest
 |   |-- assets/                    # Plugin graph assets
 |   |-- scripts/                   # Plugin command wrappers and shared scripts
 |   `-- skills/                    # Skill definitions
@@ -556,7 +490,7 @@ Run the full test suite:
 npm test
 ```
 
-The current tests cover initialization, preflight context budgeting, crystallization, auto-crystallization, evidence filtering, recommendation-pool governance, Obsidian output, graph generation, graph runtime behavior, plugin command shells, and Codex local plugin installation.
+The current tests cover the `repowise init` CLI, initialization, preflight context budgeting, crystallization, auto-crystallization, evidence filtering, recommendation-pool governance, Obsidian output, graph generation, graph runtime behavior, compatibility plugin command shells, and legacy Codex local plugin installation logic.
 
 Before publishing:
 

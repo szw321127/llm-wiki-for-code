@@ -147,29 +147,68 @@ source_evidence:
 ## 环境要求
 
 - 支持原生 ESM 的 Node.js。
-- 用于运行脚本的 npm。
-- 只有在需要把 `pk` 技能安装进 Codex 或 Claude Code 时，才需要对应 AI 编程助手。
+- 用于安装和运行 CLI 的 npm。
+- 只有在需要把 Repowise skills 注入 Codex 或 Claude Code 时，才需要对应 AI 编程助手；`repowise init` 可以通过参数只初始化其中一个。
 
 当前仓库主要依赖 Node 内置 test runner 和本地脚本。
 
 ## 安装
 
-### 1. 克隆仓库
+### 1. 全局安装
+
+```bash
+npm install -g repowise
+```
+
+安装后，在目标项目根目录执行：
+
+```bash
+repowise init
+```
+
+也可以显式指定目标项目：
+
+```bash
+repowise init E:\path\to\project
+```
+
+`repowise init` 会完成三件事：
+
+- 创建项目知识库 `.repowise/`。
+- 安装 Codex skills：用户级 `%USERPROFILE%\.agents\skills\repowise-*`，项目级 `<project>/.agents/skills/repowise-*`。
+- 安装 Claude Code skills：用户级 `%USERPROFILE%\.claude\skills\repowise-*`，项目级 `<project>/.claude/skills/repowise-*`。
+
+默认会同时安装 Codex 和 Claude Code skills。常用参数：
+
+```bash
+repowise init --codex
+repowise init --claude
+repowise init --no-global
+repowise init --no-project-skills
+repowise init --migrate
+repowise init --force
+```
+
+- `--codex`：只安装 Codex skills。
+- `--claude`：只安装 Claude Code skills。
+- `--no-global`：不写入用户级 skills，只写入项目级。
+- `--no-project-skills`：不写入项目级 skills，只写入用户级。
+- `--migrate`：把旧 `.project-knowledge/` 迁移为 `.repowise/`。
+- `--force`：允许覆盖已生成的 Repowise skill/runtime 文件。
+
+安装或更新 skills 后，需要完全重启 Codex / Claude Code，让新的 skill 索引生效。
+
+### 2. 本仓库开发
+
+如果是修改 Repowise 本身，先克隆仓库并运行测试：
 
 ```bash
 git clone <repository-url>
 cd <repository-directory>
-```
-
-运行测试确认本地环境可用：
-
-```bash
 npm test
 ```
 
-### 2. 作为普通 CLI 使用
-
-不安装任何助手插件，也可以直接通过 npm 脚本使用：
+开发脚本仍保留 `pk:*` 名称，作为仓库内部兼容入口：
 
 ```bash
 npm run pk:init -- <project-root>
@@ -177,113 +216,22 @@ npm run pk:preflight -- <project-root> "实现 HTTP 调用"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
 ```
 
-这种方式适合手动执行、CI 或其它自动化流程。
-
-### 3. 安装到 Codex
-
-如果希望在 Codex 对话中直接使用 `pk:*` 技能：
-
-```bash
-npm run codex:install
-```
-
-安装脚本会：
-
-- 从当前仓库的 `plugins/pk/` 创建本地插件链接。
-- 在用户目录的 `.agents/plugins/marketplace.json` 写入 `local-project-knowledge` marketplace 条目。
-- 将插件策略标记为 `INSTALLED_BY_DEFAULT`。
-
-安装后需要完全重启 Codex。重启后技能列表中应该能看到：
-
-```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
-```
-
-升级当前仓库后，重新执行安装命令并完全重启 Codex。本地安装可能会让 `~/plugins/pk` 指向当前仓库，但运行中的客户端仍可能使用启动时读取的 plugin 缓存：
-
-```bash
-npm run codex:install
-```
-
-卸载：
-
-```bash
-npm run codex:uninstall
-```
-
-### 4. 安装到 Claude Code
-
-使用 Claude Code 的标准插件命令：
-
-```bash
-/plugin marketplace add <repository-root>
-/plugin install pk@local-project-knowledge
-```
-
-例如：
-
-```bash
-/plugin marketplace add /path/to/universal-practice-knowledge-graph
-/plugin install pk@local-project-knowledge
-```
-
-这会注册 `local-project-knowledge` marketplace，并从 `plugins/pk/` 安装 `pk` 插件。
-
-安装后需要完全重启 Claude Code。重启后技能列表中应该能看到：
-
-```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
-```
-
-修改或拉取当前仓库后，更新这个插件并完全重启 Claude Code。Claude Code 会把插件复制到 `.claude/plugins/cache/...`，所以已经安装的插件不会自动反映仓库里的新改动：
-
-```bash
-/plugin update pk@local-project-knowledge
-```
-
-卸载：
-
-```bash
-/plugin uninstall pk@local-project-knowledge
-```
-
-### 5. 初始化目标项目
-
-安装或克隆工具后，还需要让目标项目进入知识库流程：
-
-```bash
-npm run pk:init -- <project-root>
-```
-
-或者在 Codex 中使用：
-
-```text
-pk-init
-```
-
-初始化后，目标项目根目录会出现 `.repowise/`。没有这个目录的项目会返回 `mode: no-knowledge`，并跳过项目知识流程。
+普通用户优先使用 `repowise init`；旧版 `pk` 插件 marketplace 不再作为推荐安装方式。
 
 ## 快速开始
 
 ```bash
+npm install -g repowise
+cd <project-root>
+repowise init
+```
+
+初始化后，目标项目根目录会出现 `.repowise/`。没有这个目录的项目会返回 `mode: no-knowledge`，并跳过项目知识流程。
+
+在 agent 中可以使用 `repowise-preflight`、`repowise-status`、`repowise-graph` 等 skills。仓库开发或 CI 可继续使用本地 npm 脚本：
+
+```bash
 npm test
-npm run pk:init -- <project-root>
 npm run pk:status -- <project-root>
 npm run pk:preflight -- <project-root> "实现 HTTP 调用"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
@@ -297,42 +245,28 @@ npm run pk:serve -- <project-root> 8124
 
 ## 技能入口
 
-仓库同时内置 Codex 插件和 Claude Code 插件。
-
-Codex 技能名：
+`repowise init` 会按参数把同一组 skills 安装到 Codex 和 Claude Code。两个客户端的技能名一致：
 
 ```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
+repowise-init
+repowise-preflight
+repowise-status
+repowise-graph
+repowise-crystallize
+repowise-auto-crystallize
+repowise-lint
+repowise-govern
+repowise-serve
 ```
 
-Claude Code 技能名：
-
-```text
-pk-init
-pk-preflight
-pk-status
-pk-graph
-pk-crystallize
-pk-auto-crystallize
-pk-lint
-pk-govern
-pk-serve
-```
+旧的 `plugins/pk/skills` 仍作为当前迁移期的源 skill bundle，安装时会复制并改写为 `repowise-*` 名称。
 
 ## 常用流程
 
 ### 初始化知识库
 
 ```bash
-npm run pk:init -- <project-root>
+repowise init <project-root>
 ```
 
 会在目标项目中创建 `.repowise/`，包括：
@@ -527,15 +461,15 @@ npm run pk:serve -- <project-root> 8124
 
 ```text
 .
-|-- .agents/                       # Codex 本地 marketplace 元数据
+|-- .agents/                       # 兼容期的本地 marketplace 元数据
 |-- .github/                       # GitHub issue 和 PR 模板
-|-- .claude-plugin/                # Claude Code marketplace 元数据
+|-- .claude-plugin/                # 兼容期的 Claude Code plugin 元数据
 |-- assets/                        # 项目图谱前端资产
 |-- docs/                          # 设计和实现计划
 |-- knowledge/                     # 通用图谱原型和回归验证资产
-|-- plugins/pk/                    # Codex 和 Claude Code 插件包
-|   |-- .codex-plugin/             # Codex plugin 配置
-|   |-- .claude-plugin/            # Claude Code plugin 配置
+|-- plugins/pk/                    # 兼容期源 skill bundle，repowise init 会复制为 repowise-* skills
+|   |-- .codex-plugin/             # 旧 Codex plugin 配置
+|   |-- .claude-plugin/            # 旧 Claude Code plugin 配置
 |   |-- assets/                    # 插件图谱资产
 |   |-- scripts/                   # 插件命令包装和共享脚本
 |   `-- skills/                    # 技能定义
@@ -556,7 +490,7 @@ npm run pk:serve -- <project-root> 8124
 npm test
 ```
 
-当前测试覆盖初始化、预检上下文预算、结晶、自动结晶、证据过滤、推荐池治理、Obsidian 输出、图谱生成、图谱运行时行为、插件命令外壳，以及 Codex 本地插件安装。
+当前测试覆盖 `repowise init` CLI、初始化、预检上下文预算、结晶、自动结晶、证据过滤、推荐池治理、Obsidian 输出、图谱生成、图谱运行时行为、兼容插件命令外壳，以及旧 Codex 本地插件安装逻辑。
 
 发布前建议执行：
 
