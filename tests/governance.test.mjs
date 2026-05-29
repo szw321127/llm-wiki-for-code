@@ -9,7 +9,7 @@ import { promisify } from "node:util";
 import { governProjectKnowledge, verifyKnowledgeNode } from "../scripts/govern-project-knowledge.mjs";
 import { buildProjectGraphFromDirectory, parseFrontmatterBlock } from "../scripts/knowledge-lib.mjs";
 
-const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".project-knowledge");
+const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".repowise");
 const execFileAsync = promisify(execFile);
 
 
@@ -201,7 +201,7 @@ test("governProjectKnowledge CLI previews by default and applies with --apply", 
 });
 async function copyFixture(prefix) {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   return knowledgeRoot;
 }

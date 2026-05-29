@@ -9,6 +9,7 @@ import { inspectEvidencePaths, loadEvidencePolicy } from "./evidence-paths.mjs";
 import { buildProjectGraphFromDirectory, parseFrontmatterBlock } from "./knowledge-lib.mjs";
 import { lintProjectKnowledge } from "./lint-project-knowledge.mjs";
 import { createLogEvent, refreshObsidianVault } from "./obsidian-lib.mjs";
+import { resolveKnowledgeRoot } from "./paths.mjs";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 
@@ -483,20 +484,6 @@ function dedupeActions(actions) {
     seen.add(key);
     return true;
   });
-}
-
-async function resolveKnowledgeRoot(projectRootOrKnowledgeRoot) {
-  const resolved = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
-  if (await exists(path.join(resolved, "project-profile.md"))) {
-    return resolved;
-  }
-
-  const projectKnowledgeRoot = path.join(resolved, ".project-knowledge");
-  if (await exists(path.join(projectKnowledgeRoot, "project-profile.md"))) {
-    return projectKnowledgeRoot;
-  }
-
-  throw new Error(`未找到 .project-knowledge: ${resolved}`);
 }
 
 function validateNodeId(nodeId) {

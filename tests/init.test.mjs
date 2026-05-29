@@ -8,7 +8,7 @@ import { initializeProjectKnowledge } from "../scripts/init-project-knowledge.mj
 
 const fixtureRoot = path.resolve("tests", "fixtures", "init-sample-project");
 
-test("initializeProjectKnowledge bootstraps .project-knowledge from local code and docs", async () => {
+test("initializeProjectKnowledge bootstraps .repowise from local code and docs", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-init-"));
   const projectRoot = path.join(tempRoot, "sample-project");
 
@@ -50,7 +50,7 @@ test("initializeProjectKnowledge bootstraps .project-knowledge from local code a
   );
 
   const summary = await initializeProjectKnowledge(projectRoot);
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
   const projectProfile = await fs.readFile(path.join(knowledgeRoot, "project-profile.md"), "utf8");
   const practice = await fs.readFile(
     path.join(knowledgeRoot, "practices", "practice-http-client.md"),
@@ -144,7 +144,7 @@ test("initializeProjectKnowledge does not create centralized config recommendati
   );
 
   const summary = await initializeProjectKnowledge(projectRoot);
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
   const practice = await fs.readFile(
     path.join(knowledgeRoot, "incubating", "practices", "practice-config-management.md"),
     "utf8"

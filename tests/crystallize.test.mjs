@@ -36,7 +36,7 @@ test("crystallizeSession supports no-op, session-only, incubating, and stable-up
     await fileExists(
       path.join(
         projectRoot,
-        ".project-knowledge",
+        ".repowise",
         "sessions",
         "session-2026-04-23-session-only.md"
       )
@@ -75,7 +75,7 @@ test("crystallizeSession supports no-op, session-only, incubating, and stable-up
     await fileExists(
       path.join(
         projectRoot,
-        ".project-knowledge",
+        ".repowise",
         "incubating",
         "options",
         "option-shared-status-layer.md"
@@ -104,7 +104,7 @@ test("crystallizeSession supports no-op, session-only, incubating, and stable-up
   const updatedRule = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "rules",
       "rule-use-unified-client.md"
     ),
@@ -112,7 +112,7 @@ test("crystallizeSession supports no-op, session-only, incubating, and stable-up
   );
   const usageIndex = JSON.parse(
     await fs.readFile(
-      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      path.join(projectRoot, ".repowise", "state", "usage-index.json"),
       "utf8"
     )
   );
@@ -177,7 +177,7 @@ test("crystallize CLI accepts a JSON input file for adopted and incubating updat
     await fileExists(
       path.join(
         projectRoot,
-        ".project-knowledge",
+        ".repowise",
         "incubating",
         "options",
         "option-cli-json-status-layer.md"
@@ -188,16 +188,16 @@ test("crystallize CLI accepts a JSON input file for adopted and incubating updat
 
   const usageIndex = JSON.parse(
     await fs.readFile(
-      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      path.join(projectRoot, ".repowise", "state", "usage-index.json"),
       "utf8"
     )
   );
   const log = await fs.readFile(
-    path.join(projectRoot, ".project-knowledge", "log.md"),
+    path.join(projectRoot, ".repowise", "log.md"),
     "utf8"
   );
   const incubatingView = await fs.readFile(
-    path.join(projectRoot, ".project-knowledge", "_views", "incubating.md"),
+    path.join(projectRoot, ".repowise", "_views", "incubating.md"),
     "utf8"
   );
 
@@ -251,7 +251,7 @@ test("crystallizeSession preserves structured source evidence records", async ()
   const written = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "options",
       "option-rich-evidence-crystallized.md"
@@ -281,7 +281,7 @@ test("crystallizeSession records rejected nodes after preflight hits", async () 
   });
   const usageIndex = JSON.parse(
     await fs.readFile(
-      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      path.join(projectRoot, ".repowise", "state", "usage-index.json"),
       "utf8"
     )
   );

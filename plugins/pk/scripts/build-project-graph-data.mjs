@@ -9,6 +9,7 @@ import {
 } from "./knowledge-lib.mjs";
 import { buildProjectGraphPage } from "./build-project-graph-page.mjs";
 import { refreshObsidianVault } from "./obsidian-lib.mjs";
+import { resolveKnowledgeRoot, resolveProjectKnowledgeRoot } from "./paths.mjs";
 
 export async function buildProjectGraphArtifacts(projectKnowledgeDir) {
   const graph = await buildProjectGraphFromDirectory(projectKnowledgeDir);
@@ -20,7 +21,9 @@ export async function buildProjectGraphArtifacts(projectKnowledgeDir) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const projectKnowledgeDir = path.resolve(process.argv[2] || ".project-knowledge");
+  const projectKnowledgeDir = process.argv[2]
+    ? await resolveKnowledgeRoot(process.argv[2])
+    : resolveProjectKnowledgeRoot(process.cwd());
   const result = await buildProjectGraphArtifacts(projectKnowledgeDir);
 
   console.log(

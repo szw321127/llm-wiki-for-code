@@ -6,11 +6,11 @@ import test from "node:test";
 
 import { buildProjectGraphArtifacts } from "../scripts/build-project-graph-data.mjs";
 
-const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".project-knowledge");
+const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".repowise");
 
 test("buildProjectGraphArtifacts writes project graph data, index, and page assets", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-graph-build-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
 
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
 

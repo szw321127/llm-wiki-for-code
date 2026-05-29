@@ -12,7 +12,7 @@ Treat this skill as the preferred task-end entrypoint when the user wants the pr
 - Determine the target project root from an explicit path; otherwise use the current working directory.
 - Resolve `../../scripts/pk-auto-crystallize.mjs` relative to this `SKILL.md` file.
 - The wrapper delegates to `auto-crystallize-session.mjs`.
-- If `.project-knowledge/project-profile.md` is missing, return `mode: no-knowledge` and skip crystallization entirely; do not scan touched files, create sessions, or create `.project-knowledge/`.
+- If `.repowise/project-profile.md` is missing, return `mode: no-knowledge` and skip crystallization entirely; do not scan touched files, create sessions, or create `.repowise/`.
 - Prefer passing a JSON input file after the project path when the task summary, touched files, or session id are known.
 - If `adoptedNodeIds` is omitted, allow the script to infer adopted recommended options from `pk-preflight` matches.
 - Prefer explicit `touchedFiles`; `allowGitStatusFallback` must be true before dirty git status is used as low-confidence evidence.

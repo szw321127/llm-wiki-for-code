@@ -9,7 +9,7 @@ Treat this skill as the primary plugin entrypoint for project knowledge status i
 
 ## Required Behavior
 
-- Accept either a project root or a `.project-knowledge/` directory.
+- Accept either a project root or a `.repowise/` directory.
 - Resolve `../../scripts/pk-status.mjs` relative to this `SKILL.md` file.
 - The wrapper delegates to `status-report.mjs`.
 - Return the summary in Chinese, including project title, stable node count, incubating node count, recent sessions, and recommended options when available.

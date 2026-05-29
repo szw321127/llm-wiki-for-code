@@ -9,7 +9,7 @@ Treat this skill as the governance preview step after `pk-lint`; use apply mode 
 
 ## Required Behavior
 
-- Accept either a project root or a `.project-knowledge/` directory.
+- Accept either a project root or a `.repowise/` directory.
 - Resolve `../../scripts/pk-govern.mjs` relative to this `SKILL.md` file.
 - The wrapper delegates to `govern-project-knowledge.mjs`.
 - Default behavior is dry-run preview; pass `--apply` to write reversible governance changes.

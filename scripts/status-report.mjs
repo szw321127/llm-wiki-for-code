@@ -8,6 +8,7 @@ import {
   buildProjectGraphFromDirectory,
   parseMarkdownDocument
 } from "./knowledge-lib.mjs";
+import { resolveKnowledgeRoot } from "./paths.mjs";
 
 export async function generateStatusReport(projectRootOrKnowledgeRoot) {
   const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
@@ -34,22 +35,6 @@ export async function generateStatusReport(projectRootOrKnowledgeRoot) {
     recentSessions,
     recommendedOptions
   };
-}
-
-async function resolveKnowledgeRoot(projectRootOrKnowledgeRoot) {
-  const resolved = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
-  const directKnowledgeRoot = path.join(resolved, "project-profile.md");
-
-  if (await exists(directKnowledgeRoot)) {
-    return resolved;
-  }
-
-  const projectKnowledgeRoot = path.join(resolved, ".project-knowledge");
-  if (await exists(path.join(projectKnowledgeRoot, "project-profile.md"))) {
-    return projectKnowledgeRoot;
-  }
-
-  throw new Error(`未找到 .project-knowledge: ${resolved}`);
 }
 
 async function loadRecentSessions(sessionDirectory) {
@@ -85,15 +70,6 @@ async function readJson(filePath, fallbackValue) {
       return fallbackValue;
     }
     throw error;
-  }
-}
-
-async function exists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
   }
 }
 

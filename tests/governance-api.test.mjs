@@ -30,7 +30,7 @@ test("project knowledge server rejects a node through the governance API", async
     assert.equal(payload.action.node_id, "option-direct-call");
 
     const document = await readFrontmatter(
-      path.join(projectRoot, ".project-knowledge", "incubating", "options", "option-direct-call.md")
+      path.join(projectRoot, ".repowise", "incubating", "options", "option-direct-call.md")
     );
     assert.equal(document.review_status, "rejected");
     assert.equal(document.rejected_reason, "manual-reject");
@@ -83,12 +83,12 @@ test("project knowledge server marks a node verified through the governance API"
     assert.equal(payload.action.node_id, "rule-use-unified-client");
 
     const document = await readFrontmatter(
-      path.join(projectRoot, ".project-knowledge", "rules", "rule-use-unified-client.md")
+      path.join(projectRoot, ".repowise", "rules", "rule-use-unified-client.md")
     );
     assert.equal(document.last_verified_at, "2026-05-15");
     assert.equal(document.verified_reason, "source-reviewed");
 
-    const log = await fs.readFile(path.join(projectRoot, ".project-knowledge", "log.md"), "utf8");
+    const log = await fs.readFile(path.join(projectRoot, ".repowise", "log.md"), "utf8");
     assert.match(log, /pk:govern:verify/);
   } finally {
     await close(server);
@@ -117,7 +117,7 @@ test("project knowledge server archives a node through the governance API", asyn
     assert.equal(payload.action.node_id, "option-unified-client");
 
     const document = await readFrontmatter(
-      path.join(projectRoot, ".project-knowledge", "incubating", "options", "option-unified-client.md")
+      path.join(projectRoot, ".repowise", "incubating", "options", "option-unified-client.md")
     );
     assert.equal(document.status, "archived");
     assert.equal(document.archive_reason, "retired-pattern");
@@ -150,7 +150,7 @@ test("project knowledge server links a duplicate through the governance API", as
     assert.equal(payload.action.duplicate_of, "option-unified-client");
 
     const document = await readFrontmatter(
-      path.join(projectRoot, ".project-knowledge", "incubating", "options", "option-direct-call.md")
+      path.join(projectRoot, ".repowise", "incubating", "options", "option-direct-call.md")
     );
     assert.equal(document.review_status, "rejected");
     assert.equal(document.duplicate_of, "option-unified-client");

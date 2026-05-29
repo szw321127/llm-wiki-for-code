@@ -17,6 +17,7 @@ import {
   createLogEvent,
   refreshObsidianVault
 } from "./obsidian-lib.mjs";
+import { knowledgeDirectoryName, resolveKnowledgeRoot } from "./paths.mjs";
 
 export async function crystallizeSession(projectRootOrKnowledgeRoot, input = {}) {
   const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
@@ -148,20 +149,6 @@ export async function loadCrystallizeCliInput(projectRootOrKnowledgeRoot, cliArg
   };
 }
 
-async function resolveKnowledgeRoot(projectRootOrKnowledgeRoot) {
-  const resolved = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
-  if (await exists(path.join(resolved, "project-profile.md"))) {
-    return resolved;
-  }
-
-  const projectKnowledgeRoot = path.join(resolved, ".project-knowledge");
-  if (await exists(path.join(projectKnowledgeRoot, "project-profile.md"))) {
-    return projectKnowledgeRoot;
-  }
-
-  throw new Error(`未找到 .project-knowledge: ${resolved}`);
-}
-
 async function readCrystallizeInputFile(projectRootOrKnowledgeRoot, inputFilePath) {
   const resolvedInputPath = await resolveExistingInputFile(projectRootOrKnowledgeRoot, inputFilePath);
   if (!resolvedInputPath) {
@@ -196,7 +183,7 @@ function buildInputPathCandidates(projectRootOrKnowledgeRoot, inputFilePath) {
   return dedupeValues([
     path.resolve(process.cwd(), inputFilePath),
     path.resolve(resolvedProjectPath, inputFilePath),
-    path.resolve(resolvedProjectPath, ".project-knowledge", inputFilePath)
+    path.resolve(resolvedProjectPath, knowledgeDirectoryName, inputFilePath)
   ]);
 }
 

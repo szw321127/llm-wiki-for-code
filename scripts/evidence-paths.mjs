@@ -1,8 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { resolveKnowledgeRoot } from "./paths.mjs";
+
 const DEFAULT_IGNORED_EVIDENCE_PREFIXES = [
   ".git/",
+  ".repowise/",
   ".project-knowledge/",
   ".worktrees/",
   ".agents/",
@@ -31,6 +34,7 @@ const DEFAULT_WALK_IGNORED_DIRECTORIES = new Set([
   ".claude",
   ".codex",
   ".cursor",
+  ".repowise",
   ".project-knowledge",
   ".worktrees",
   "node_modules",
@@ -211,13 +215,7 @@ export function isVolatileEvidencePath(filePath, policyOverrides = {}) {
 }
 
 async function resolvePolicyKnowledgeRoot(projectRootOrKnowledgeRoot) {
-  const resolved = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
-
-  if (await exists(path.join(resolved, "project-profile.md"))) {
-    return resolved;
-  }
-
-  return path.join(resolved, ".project-knowledge");
+  return resolveKnowledgeRoot(projectRootOrKnowledgeRoot, { mustExist: false });
 }
 
 function normalizePolicyPrefix(value) {

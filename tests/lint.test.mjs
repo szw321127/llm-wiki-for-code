@@ -6,11 +6,11 @@ import test from "node:test";
 
 import { lintProjectKnowledge } from "../scripts/lint-project-knowledge.mjs";
 
-const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".project-knowledge");
+const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".repowise");
 
 test("lintProjectKnowledge reports recommendation pools and knowledge health issues", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeOptionWithoutPractice(knowledgeRoot);
   await writePracticeWithoutOptions(knowledgeRoot);
@@ -33,7 +33,7 @@ test("lintProjectKnowledge reports recommendation pools and knowledge health iss
 
 test("lintProjectKnowledge reports lifecycle governance and duplicate candidates", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-governance-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeDuplicatePractice(knowledgeRoot);
   await writeAdoptedIncubatingOption(knowledgeRoot);
@@ -73,7 +73,7 @@ test("lintProjectKnowledge reports lifecycle governance and duplicate candidates
 
 test("lintProjectKnowledge ignores manually rejected nodes for governance candidates", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-rejected-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeDuplicatePractice(knowledgeRoot);
   await markRejected(path.join(knowledgeRoot, "practices", "practice-http-client-duplicate.md"));
@@ -117,7 +117,7 @@ test("lintProjectKnowledge ignores manually rejected nodes for governance candid
 
 test("lintProjectKnowledge reports volatile source evidence paths", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-volatile-evidence-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeVolatileEvidenceOption(knowledgeRoot);
 
@@ -141,7 +141,7 @@ test("lintProjectKnowledge reports volatile source evidence paths", async () => 
 
 test("lintProjectKnowledge reports broken source evidence paths with repair candidates", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-broken-evidence-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await fs.mkdir(path.join(tempRoot, "src", "api"), { recursive: true });
   await fs.mkdir(path.join(tempRoot, "src", "pages"), { recursive: true });
@@ -165,7 +165,7 @@ test("lintProjectKnowledge reports broken source evidence paths with repair cand
 
 test("lintProjectKnowledge applies project evidence policy overrides", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-evidence-policy-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeEvidencePolicy(knowledgeRoot, {
     ignoredPrefixes: ["generated/"],
@@ -191,7 +191,7 @@ test("lintProjectKnowledge applies project evidence policy overrides", async () 
 
 test("lintProjectKnowledge reports evidence records missing reasons on stable nodes", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-rich-evidence-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeRichEvidenceWithoutReasonOption(knowledgeRoot);
 
@@ -210,7 +210,7 @@ test("lintProjectKnowledge reports evidence records missing reasons on stable no
 
 test("lintProjectKnowledge reports wiki quality issues", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-wiki-quality-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeThinPractice(knowledgeRoot);
   await writeNoPreflightSurfaceOption(knowledgeRoot);
@@ -240,7 +240,7 @@ test("lintProjectKnowledge reports wiki quality issues", async () => {
 
 test("lintProjectKnowledge reports stale verification and ownership issues", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-stale-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeStaleOption(knowledgeRoot);
   await writeStrongRuleWithoutOwner(knowledgeRoot);
@@ -260,7 +260,7 @@ test("lintProjectKnowledge reports stale verification and ownership issues", asy
 
 test("lintProjectKnowledge reports low-usefulness knowledge issues", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-usefulness-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeStableOption(knowledgeRoot, "option-never-hit", "Never Hit Option", 54);
   await fs.writeFile(
@@ -318,7 +318,7 @@ test("lintProjectKnowledge reports low-usefulness knowledge issues", async () =>
 
 test("lintProjectKnowledge reports active conflicts and superseded recommendation leftovers", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lint-conflicts-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeConflictingRules(knowledgeRoot);
   await writeStableOption(knowledgeRoot, "option-superseded-recommended", "Superseded Recommended Option", 98);

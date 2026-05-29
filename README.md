@@ -2,7 +2,7 @@
 
 面向 Codex 与 Claude Code 的持久代码库 wiki。
 
-LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.project-knowledge/` 目录中，让后续 AI 编码对话可以先查已有约定，再决定是否扫描项目代码。
+LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把长期项目里的代码实践、推荐方案、任务决策、会话记录和证据关系保存到项目自己的 `.repowise/` 目录中，让后续 AI 编码对话可以先查已有约定，再决定是否扫描项目代码。
 
 <p align="center">
   <a href="#验证"><img src="https://img.shields.io/badge/tests-node%20test-0f766e" alt="Tests"></a>
@@ -12,23 +12,22 @@ LLM Wiki for Code 是一套本地代码库 wiki 和知识图谱工具。它把�
   中文文档 | [英文文档](README_EN.md)
 </p>
 
-仓库名和包名是 `llm-wiki-for-code`。助手插件保留短名 `pk`。
+仓库名是 `llm-wiki-for-code`。面向用户的 CLI 名称是 `repowise`；当前助手插件仍保留短名 `pk` 作为兼容入口。
 
 ## 30 秒看懂
 
 ```bash
-npm run pk:init -- <project-root>
-npm run pk:preflight -- <project-root> "实现 HTTP 调用"
-npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
-npm run pk:serve -- <project-root> 8124
+npm install -g repowise
+cd <project-root>
+repowise init
 ```
 
 执行后：
 
-- `pk-init` 创建 `.project-knowledge/`，作为 Markdown 知识库。
-- `pk-preflight` 在 AI 编码任务开始前返回匹配实践、推荐池和 evidence 预览。
-- `pk-auto-crystallize` 在任务结束后记录 session，并推断已采纳或待孵化知识。
-- `pk-serve` 打开本地图谱，查看 practice、option、rule、context、constraint、session 和 source evidence。
+- `repowise init` 创建 `.repowise/`，作为 Markdown 知识库。
+- `repowise init` 会把 Repowise skills 注入到 Codex 和 Claude 的用户级与项目级 skill 目录。
+- 之后可在 agent 中使用 `repowise-init` / `repowise-preflight` 等技能，或继续用本仓库的 `pk:*` 开发脚本。
+- `.repowise/open-graph.cmd` 可打开本地图谱，查看 practice、option、rule、context、constraint、session 和 source evidence。
 
 ## 适合谁
 
@@ -71,7 +70,7 @@ LLM Wiki for Code 的做法是：
 
 ## 核心模型
 
-`.project-knowledge/` 是项目级知识库，也是 Markdown 事实源。图谱、索引、Obsidian 视图和浏览器图谱页面都从这些 Markdown 文件生成。
+`.repowise/` 是项目级知识库，也是 Markdown 事实源。图谱、索引、Obsidian 视图和浏览器图谱页面都从这些 Markdown 文件生成。
 
 主要节点类型：
 
@@ -113,7 +112,7 @@ source_evidence:
 
 图谱会继续把 `source_evidence` 归一化为路径数组，同时在 `evidence_records` 中保留 `symbol`、`reason`、`observed_pattern`、`stability` 和 `last_verified_at`。稳定节点里的结构化证据应填写 `reason`，否则 `pk-lint` 会报告 `wiki-evidence-record-missing-reason`。
 
-默认策略会过滤常见的临时文件、工具状态、生成物和过程文档；它不是写死在 README 里的完整清单。每个知识库都可以通过 `.project-knowledge/evidence-policy.json` 调整：
+默认策略会过滤常见的临时文件、工具状态、生成物和过程文档；它不是写死在 README 里的完整清单。每个知识库都可以通过 `.repowise/evidence-policy.json` 调整：
 
 ```json
 {
@@ -278,7 +277,7 @@ npm run pk:init -- <project-root>
 pk-init
 ```
 
-初始化后，目标项目根目录会出现 `.project-knowledge/`。没有这个目录的项目会返回 `mode: no-knowledge`，并跳过项目知识流程。
+初始化后，目标项目根目录会出现 `.repowise/`。没有这个目录的项目会返回 `mode: no-knowledge`，并跳过项目知识流程。
 
 ## 快速开始
 
@@ -336,7 +335,7 @@ pk-serve
 npm run pk:init -- <project-root>
 ```
 
-会在目标项目中创建 `.project-knowledge/`，包括：
+会在目标项目中创建 `.repowise/`，包括：
 
 - `project-profile.md`
 - `practices/`
@@ -360,7 +359,7 @@ npm run pk:init -- <project-root>
 npm run pk:status -- <project-root>
 ```
 
-状态报告会汇总当前 `.project-knowledge/` 的节点数量和健康信号。
+状态报告会汇总当前 `.repowise/` 的节点数量和健康信号。
 
 ### 任务开始前预检
 
@@ -368,7 +367,7 @@ npm run pk:status -- <project-root>
 npm run pk:preflight -- <project-root> "实现 HTTP 调用"
 ```
 
-预检会优先读取 `.project-knowledge/`：
+预检会优先读取 `.repowise/`：
 
 - 命中已有实践时返回 `mode: knowledge-hit`。
 - 项目已初始化但知识不足时返回 `mode: needs-project-scan`。
@@ -501,7 +500,7 @@ npm run pk:serve -- <project-root> 8124
 在 Windows 上，初始化后的项目也可以运行：
 
 ```text
-.project-knowledge/open-graph.cmd
+.repowise/open-graph.cmd
 ```
 
 图谱页支持：
@@ -512,7 +511,7 @@ npm run pk:serve -- <project-root> 8124
 
 ## Obsidian 兼容
 
-`.project-knowledge/` 可以直接作为 Obsidian vault 打开。系统会维护：
+`.repowise/` 可以直接作为 Obsidian vault 打开。系统会维护：
 
 - `index.md`：知识库入口。
 - `log.md`：操作日志。

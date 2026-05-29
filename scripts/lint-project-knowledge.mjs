@@ -11,6 +11,7 @@ import {
   loadEvidencePolicy
 } from "./evidence-paths.mjs";
 import { buildProjectGraphFromDirectory, LIFECYCLE_POLICY } from "./knowledge-lib.mjs";
+import { resolveKnowledgeRoot } from "./paths.mjs";
 
 export async function lintProjectKnowledge(projectRootOrKnowledgeRoot = process.cwd(), options = {}) {
   const knowledgeRoot = await resolveKnowledgeRoot(projectRootOrKnowledgeRoot);
@@ -68,21 +69,6 @@ export async function lintProjectKnowledge(projectRootOrKnowledgeRoot = process.
     ]),
     issues
   };
-}
-
-async function resolveKnowledgeRoot(projectRootOrKnowledgeRoot) {
-  const resolved = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
-
-  if (await exists(path.join(resolved, "project-profile.md"))) {
-    return resolved;
-  }
-
-  const knowledgeRoot = path.join(resolved, ".project-knowledge");
-  if (await exists(path.join(knowledgeRoot, "project-profile.md"))) {
-    return knowledgeRoot;
-  }
-
-  throw new Error(`未找到 .project-knowledge: ${resolved}`);
 }
 
 function collectRecommendationPools(graph) {

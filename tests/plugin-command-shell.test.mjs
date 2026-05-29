@@ -71,7 +71,7 @@ test("pk plugin manifest exposes skill-bundle metadata", () => {
   assert.doesNotMatch(pluginManifest.interface.shortDescription, /command shell/i);
   assert.doesNotMatch(pluginManifest.interface.longDescription, /\/pk:/);
   assert.deepEqual(pluginManifest.interface.defaultPrompt, [
-    "Use the `pk-init` skill to initialize `.project-knowledge/` for the current project.",
+    "Use the `pk-init` skill to initialize `.repowise/` for the current project.",
     "Use the `pk-preflight` skill before implementation to retrieve matching practices or local evidence hints.",
     "Use the `pk-status` skill to summarize the current project knowledge state.",
     "Use the `pk-crystallize` skill to persist stable knowledge from the current session.",
@@ -136,12 +136,12 @@ test("pk init wrapper stays runnable after copying the plugin into a cache-style
   await initializeProjectKnowledge(projectRoot);
 
   assert.equal(
-    fs.existsSync(path.join(projectRoot, ".project-knowledge", "graph", "knowledge-graph.html")),
+    fs.existsSync(path.join(projectRoot, ".repowise", "graph", "knowledge-graph.html")),
     true
   );
 
   const workflow = fs.readFileSync(
-    path.join(projectRoot, ".project-knowledge", "workflow.md"),
+    path.join(projectRoot, ".repowise", "workflow.md"),
     "utf8"
   );
   assert.doesNotMatch(workflow, /\/pk:/);
@@ -164,7 +164,7 @@ test("pk preflight wrapper can opt into recording usage hits", async () => {
   const result = JSON.parse(stdout);
   const usageIndex = JSON.parse(
     await fsp.readFile(
-      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      path.join(projectRoot, ".repowise", "state", "usage-index.json"),
       "utf8"
     )
   );

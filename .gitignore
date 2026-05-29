@@ -13,5 +13,9 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
+.repowise/
 .project-knowledge/
 .worktrees/
+
+!tests/fixtures/**/.repowise/
+!tests/fixtures/**/.repowise/**

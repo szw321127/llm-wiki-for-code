@@ -14,7 +14,7 @@ test("runPreflight returns no-knowledge when project knowledge is missing", asyn
   const result = await runPreflight(projectRoot, "实现 HTTP 请求");
 
   assert.equal(result.mode, "no-knowledge");
-  assert.equal(result.knowledgeRoot, path.join(projectRoot, ".project-knowledge"));
+  assert.equal(result.knowledgeRoot, path.join(projectRoot, ".repowise"));
   assert.deepEqual(result.matchedPractices, []);
 });
 
@@ -34,9 +34,9 @@ test("runPreflight returns matched practices and recommendation pool for task ke
 
 test("runPreflight records hits only when explicitly enabled", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-hit-usage-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   const before = await readUsageIndex(knowledgeRoot);
@@ -65,9 +65,9 @@ test("runPreflight records hits only when explicitly enabled", async () => {
 
 test("runPreflight matches practices through applies_when task intent", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-intent-match-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   await writeIntentPractice(knowledgeRoot, {
@@ -98,9 +98,9 @@ test("runPreflight matches practices through applies_when task intent", async ()
 
 test("runPreflight excludes practices through does_not_apply_when task intent", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-intent-exclude-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   await writeIntentPractice(knowledgeRoot, {
@@ -129,9 +129,9 @@ test("runPreflight excludes practices through does_not_apply_when task intent", 
 
 test("runPreflight keeps knowledge-hit output within a small context budget", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-budget-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   await fs.mkdir(path.join(knowledgeRoot, "practices"), { recursive: true });
@@ -177,9 +177,9 @@ test("runPreflight keeps knowledge-hit output within a small context budget", as
 
 test("runPreflight excludes docs evidence from knowledge hits and scan hints", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-doc-evidence-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   await writeEvidenceFiles(projectRoot, ["src/api/client.ts"]);
@@ -213,9 +213,9 @@ test("runPreflight excludes docs evidence from knowledge hits and scan hints", a
 
 test("runPreflight applies project evidence policy to evidence previews and scan hints", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-evidence-policy-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   await writeEvidenceFiles(projectRoot, ["docs/adr/http-client.md", "src/api/client.ts"]);
@@ -262,9 +262,9 @@ test("runPreflight applies project evidence policy to evidence previews and scan
 
 test("runPreflight excludes missing evidence paths from knowledge hints", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-missing-evidence-"));
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), knowledgeRoot, {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), knowledgeRoot, {
     recursive: true
   });
   await fs.mkdir(path.join(projectRoot, "src", "api"), { recursive: true });
@@ -292,7 +292,7 @@ test("runPreflight excludes missing evidence paths from knowledge hints", async 
 
 test("runPreflight scans local project files for evidence hints when knowledge has no match", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-preflight-"));
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), path.join(projectRoot, ".project-knowledge"), {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), path.join(projectRoot, ".repowise"), {
     recursive: true
   });
   await fs.mkdir(path.join(projectRoot, "src"), { recursive: true });
@@ -318,7 +318,7 @@ test("runPreflight scans local project files for evidence hints when knowledge h
 
 test("runPreflight limits project-scan evidence hints by kind", async () => {
   const projectRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-scan-budget-"));
-  await fs.cp(path.join(fixtureProjectRoot, ".project-knowledge"), path.join(projectRoot, ".project-knowledge"), {
+  await fs.cp(path.join(fixtureProjectRoot, ".repowise"), path.join(projectRoot, ".repowise"), {
     recursive: true
   });
   await fs.mkdir(path.join(projectRoot, "src", "views", "demo"), { recursive: true });

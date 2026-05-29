@@ -10,6 +10,7 @@ import {
   createLogEvent,
   refreshObsidianVault
 } from "./obsidian-lib.mjs";
+import { resolveProjectKnowledgeRoot } from "./paths.mjs";
 import { scanProject } from "./scan-project.mjs";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -21,7 +22,7 @@ const defaultPreviewPort = 8124;
 export async function initializeProjectKnowledge(projectRoot) {
   const resolvedProjectRoot = path.resolve(projectRoot);
   const scan = await scanProject(resolvedProjectRoot);
-  const knowledgeRoot = path.join(resolvedProjectRoot, ".project-knowledge");
+  const knowledgeRoot = resolveProjectKnowledgeRoot(resolvedProjectRoot);
   const nodes = buildInitialNodes(scan);
 
   await ensureKnowledgeSkeleton(knowledgeRoot);

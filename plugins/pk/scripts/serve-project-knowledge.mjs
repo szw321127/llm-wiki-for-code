@@ -11,6 +11,7 @@ import {
   rejectKnowledgeNode,
   verifyKnowledgeNode
 } from "./govern-project-knowledge.mjs";
+import { resolveProjectKnowledgeRoot } from "./paths.mjs";
 
 const currentFilePath = fileURLToPath(import.meta.url);
 const port = Number(process.argv[3] || process.env.PORT || 8124);
@@ -32,7 +33,7 @@ function resolveMimeType(filePath) {
 
 export function createProjectKnowledgeServer(projectRoot) {
   const resolvedProjectRoot = path.resolve(projectRoot);
-  const knowledgeRoot = path.join(resolvedProjectRoot, ".project-knowledge");
+  const knowledgeRoot = resolveProjectKnowledgeRoot(resolvedProjectRoot);
 
   return http.createServer(async (request, response) => {
     try {

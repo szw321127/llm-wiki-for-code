@@ -10,7 +10,7 @@ import {
   parseFrontmatterBlock
 } from "../scripts/knowledge-lib.mjs";
 
-const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".project-knowledge");
+const fixtureRoot = path.resolve("tests", "fixtures", "sample-project", ".repowise");
 
 test("parseFrontmatterBlock parses nested project knowledge fields", () => {
   const source = `---
@@ -75,7 +75,7 @@ test("buildProjectGraphFromDirectory loads root project profile and incubating n
 
 test("buildProjectGraphFromDirectory preserves wiki governance metadata", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-metadata-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeGovernanceMetadataRule(knowledgeRoot);
 
@@ -93,7 +93,7 @@ test("buildProjectGraphFromDirectory preserves wiki governance metadata", async 
 
 test("buildProjectGraphFromDirectory normalizes rich evidence records", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-rich-evidence-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
   await writeRichEvidenceOption(knowledgeRoot);
 
@@ -118,7 +118,7 @@ test("buildProjectGraphFromDirectory normalizes rich evidence records", async ()
 
 test("buildProjectGraphFromDirectory ranks recommendation pools with usage adjustment", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
 
   await writeOption(knowledgeRoot, {
@@ -158,7 +158,7 @@ test("buildProjectGraphFromDirectory ranks recommendation pools with usage adjus
 
 test("buildProjectGraphFromDirectory ranks adoption above raw preflight hits", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-usefulness-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
 
   await writeOption(knowledgeRoot, {
@@ -215,7 +215,7 @@ test("buildProjectGraphFromDirectory ranks adoption above raw preflight hits", a
 
 test("buildProjectGraphFromDirectory excludes superseded options from recommendation ranking", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-superseded-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
 
   await writeOption(knowledgeRoot, {
@@ -241,7 +241,7 @@ test("buildProjectGraphFromDirectory excludes superseded options from recommenda
 
 test("buildProjectGraphFromDirectory excludes archived options from recommendation ranking", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-ranking-archived-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
 
   await writeOption(knowledgeRoot, {
@@ -265,7 +265,7 @@ test("buildProjectGraphFromDirectory excludes archived options from recommendati
 
 test("buildProjectGraphFromDirectory marks promotion and eviction candidates", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-lifecycle-"));
-  const knowledgeRoot = path.join(tempRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(tempRoot, ".repowise");
   await fs.cp(fixtureRoot, knowledgeRoot, { recursive: true });
 
   await writeOption(knowledgeRoot, {

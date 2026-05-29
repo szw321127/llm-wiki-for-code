@@ -2,6 +2,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { resolveKnowledgeRoot, resolveProjectKnowledgeRoot } from "./paths.mjs";
+
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const assetDirectory = path.resolve(scriptDirectory, "..", "assets", "graph");
 
@@ -20,7 +22,9 @@ export async function buildProjectGraphPage(projectKnowledgeDir) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const projectKnowledgeDir = path.resolve(process.argv[2] || ".project-knowledge");
+  const projectKnowledgeDir = process.argv[2]
+    ? await resolveKnowledgeRoot(process.argv[2])
+    : resolveProjectKnowledgeRoot(process.cwd());
   const output = await buildProjectGraphPage(projectKnowledgeDir);
   console.log(JSON.stringify(output, null, 2));
 }

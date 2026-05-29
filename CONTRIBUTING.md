@@ -21,6 +21,7 @@ npm test
 Useful commands:
 
 ```bash
+node bin/repowise.mjs init <project-root> --no-global
 npm run pk:init -- <project-root>
 npm run pk:preflight -- <project-root> "task description"
 npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
@@ -36,7 +37,7 @@ Long-term `source_evidence` should point to stable source files, not temporary p
 Avoid using these as durable evidence:
 
 - `.worktrees/`
-- `.project-knowledge/`
+- `.repowise/`
 - `.agents/`
 - `.codex/`
 - `node_modules/`

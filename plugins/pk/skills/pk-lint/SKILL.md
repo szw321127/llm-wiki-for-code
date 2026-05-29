@@ -9,7 +9,7 @@ Treat this skill as the read-only maintenance check for project knowledge.
 
 ## Required Behavior
 
-- Accept either a project root or a `.project-knowledge/` directory.
+- Accept either a project root or a `.repowise/` directory.
 - Resolve `../../scripts/pk-lint.mjs` relative to this `SKILL.md` file.
 - The wrapper delegates to `lint-project-knowledge.mjs`.
 - Report the result in Chinese, including recommendation pools and any evidence, lifecycle, eviction, duplicate, wiki quality, stale verification, usefulness, ownership, or consistency issues.

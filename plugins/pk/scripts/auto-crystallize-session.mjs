@@ -8,6 +8,7 @@ import { promisify } from "node:util";
 
 import { crystallizeSession } from "./crystallize-session.mjs";
 import { loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
+import { knowledgeDirectoryName, resolveProjectTarget as resolveRepowiseProjectTarget } from "./paths.mjs";
 import { runPreflight } from "./preflight-session.mjs";
 import { loadTaskContext } from "./task-adapters.mjs";
 
@@ -107,30 +108,7 @@ export async function loadAutoCrystallizeCliInput(projectRootOrKnowledgeRoot, cl
 }
 
 async function resolveProjectTarget(projectRootOrKnowledgeRoot) {
-  const resolved = path.resolve(projectRootOrKnowledgeRoot || process.cwd());
-
-  if (await exists(path.join(resolved, "project-profile.md"))) {
-    return {
-      hasKnowledge: true,
-      projectRoot: path.dirname(resolved),
-      knowledgeRoot: resolved
-    };
-  }
-
-  const knowledgeRoot = path.join(resolved, ".project-knowledge");
-  if (await exists(path.join(knowledgeRoot, "project-profile.md"))) {
-    return {
-      hasKnowledge: true,
-      projectRoot: resolved,
-      knowledgeRoot
-    };
-  }
-
-  return {
-    hasKnowledge: false,
-    projectRoot: resolved,
-    knowledgeRoot
-  };
+  return resolveRepowiseProjectTarget(projectRootOrKnowledgeRoot);
 }
 
 function buildNoKnowledgeResult(target) {
@@ -443,7 +421,7 @@ function buildInputPathCandidates(projectRootOrKnowledgeRoot, inputFilePath) {
   return dedupeValues([
     path.resolve(process.cwd(), inputFilePath),
     path.resolve(resolvedProjectPath, inputFilePath),
-    path.resolve(resolvedProjectPath, ".project-knowledge", inputFilePath)
+    path.resolve(resolvedProjectPath, knowledgeDirectoryName, inputFilePath)
   ]);
 }
 

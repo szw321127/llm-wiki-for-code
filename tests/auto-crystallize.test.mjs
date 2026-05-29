@@ -33,12 +33,12 @@ test("autoCrystallizeSession skips project knowledge when pk-init has not run", 
   assert.equal(result.mode, "no-knowledge");
   assert.equal(result.skipped, true);
   assert.equal(result.reason, "project-knowledge-not-initialized");
-  assert.equal(result.knowledgeRoot, path.join(projectRoot, ".project-knowledge"));
+  assert.equal(result.knowledgeRoot, path.join(projectRoot, ".repowise"));
   assert.deepEqual(result.incubatingNodeIds, []);
   assert.deepEqual(result.adoptedNodeIds, []);
   assert.deepEqual(result.auto.touchedFiles, []);
   assert.equal(result.auto.preflightMode, "no-knowledge");
-  assert.equal(await fileExists(path.join(projectRoot, ".project-knowledge")), false);
+  assert.equal(await fileExists(path.join(projectRoot, ".repowise")), false);
 });
 
 test("autoCrystallizeSession records adopted recommendations when task matches existing knowledge", async () => {
@@ -64,12 +64,12 @@ test("autoCrystallizeSession records adopted recommendations when task matches e
 
   const usageIndex = JSON.parse(
     await fs.readFile(
-      path.join(projectRoot, ".project-knowledge", "state", "usage-index.json"),
+      path.join(projectRoot, ".repowise", "state", "usage-index.json"),
       "utf8"
     )
   );
   const session = await fs.readFile(
-    path.join(projectRoot, ".project-knowledge", "sessions", "session-2026-04-28-auto-hit.md"),
+    path.join(projectRoot, ".repowise", "sessions", "session-2026-04-28-auto-hit.md"),
     "utf8"
   );
 
@@ -104,7 +104,7 @@ test("autoCrystallizeSession creates incubating practice and option when no know
   const practice = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "practices",
       "practice-pdf-export-cache-strategy.md"
@@ -114,7 +114,7 @@ test("autoCrystallizeSession creates incubating practice and option when no know
   const option = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "options",
       "option-pdf-export-cache-strategy-candidate.md"
@@ -158,7 +158,7 @@ test("autoCrystallizeSession excludes volatile agent artifacts from touched file
   const session = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "sessions",
       "session-2026-04-28-auto-evidence-filter.md"
     ),
@@ -167,7 +167,7 @@ test("autoCrystallizeSession excludes volatile agent artifacts from touched file
   const practice = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "practices",
       "practice-event-bus-retry-strategy.md"
@@ -177,7 +177,7 @@ test("autoCrystallizeSession excludes volatile agent artifacts from touched file
   const option = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "options",
       "option-event-bus-retry-strategy-candidate.md"
@@ -222,7 +222,7 @@ test("autoCrystallizeSession avoids incubating knowledge when only volatile file
   const session = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "sessions",
       "session-2026-04-28-auto-only-volatile.md"
     ),
@@ -236,7 +236,7 @@ test("autoCrystallizeSession avoids incubating knowledge when only volatile file
 test("autoCrystallizeSession applies project evidence policy to touched files and evidence", async () => {
   const tempRoot = await fs.mkdtemp(path.join(os.tmpdir(), "project-knowledge-auto-evidence-policy-"));
   const projectRoot = path.join(tempRoot, "sample-project");
-  const knowledgeRoot = path.join(projectRoot, ".project-knowledge");
+  const knowledgeRoot = path.join(projectRoot, ".repowise");
 
   await fs.cp(fixtureRoot, projectRoot, { recursive: true });
   await fs.writeFile(
@@ -395,7 +395,7 @@ test("autoCrystallizeSession can derive task context and evidence hints from a g
   ]);
 
   const session = await fs.readFile(
-    path.join(projectRoot, ".project-knowledge", "sessions", "session-2026-05-15-task-context.md"),
+    path.join(projectRoot, ".repowise", "sessions", "session-2026-05-15-task-context.md"),
     "utf8"
   );
 
@@ -430,7 +430,7 @@ test("autoCrystallizeSession generalizes long-running scheduler knowledge beyond
   const practice = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "practices",
       "practice-long-running-auto-task-global-scheduler.md"
@@ -440,7 +440,7 @@ test("autoCrystallizeSession generalizes long-running scheduler knowledge beyond
   const option = await fs.readFile(
     path.join(
       projectRoot,
-      ".project-knowledge",
+      ".repowise",
       "incubating",
       "options",
       "option-login-ready-global-scheduler.md"
@@ -513,7 +513,7 @@ test("auto crystallize CLI exits cleanly when project knowledge is missing", asy
   assert.equal(result.mode, "no-knowledge");
   assert.equal(result.skipped, true);
   assert.equal(result.reason, "project-knowledge-not-initialized");
-  assert.equal(await fileExists(path.join(projectRoot, ".project-knowledge")), false);
+  assert.equal(await fileExists(path.join(projectRoot, ".repowise")), false);
 });
 
 async function fileExists(filePath) {

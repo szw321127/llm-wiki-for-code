@@ -1,9 +1,24 @@
 {
-  "name": "llm-wiki-for-code",
+  "name": "repowise",
   "description": "Persistent codebase wiki and knowledge graph for AI coding agents",
-  "private": true,
   "version": "0.1.0",
   "type": "module",
+  "bin": {
+    "repowise": "./bin/repowise.mjs"
+  },
+  "files": [
+    "bin/",
+    "scripts/",
+    "plugins/pk/assets/",
+    "plugins/pk/scripts/",
+    "plugins/pk/skills/",
+    "plugins/pk/templates/",
+    "assets/",
+    "templates/",
+    "README.md",
+    "README_EN.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "node knowledge/tools/build-graph-data.mjs",
     "codex:install": "node scripts/install-codex-local-plugin.mjs",
@@ -18,7 +33,7 @@
     "pk:govern": "node scripts/govern-project-knowledge.mjs",
     "pk:benchmark": "node scripts/benchmark-preflight.mjs",
     "pk:serve": "node scripts/serve-project-knowledge.mjs",
-    "test": "node --experimental-test-isolation=none --test tests/skill-shell.test.mjs tests/plugin-command-shell.test.mjs tests/codex-local-plugin-install.test.mjs tests/knowledge-lib.test.mjs tests/preflight.test.mjs tests/pk-benchmark.test.mjs tests/lint.test.mjs tests/governance.test.mjs tests/governance-api.test.mjs tests/init.test.mjs tests/graph-build.test.mjs tests/status.test.mjs tests/crystallize.test.mjs tests/auto-crystallize.test.mjs tests/task-adapters.test.mjs tests/project-graph-shell.test.mjs knowledge/tests/build-graph-data.test.mjs knowledge/tests/graph-runtime.test.mjs knowledge/tests/graph-shell.test.mjs knowledge/tests/serve-knowledge.test.mjs",
+    "test": "node --experimental-test-isolation=none --test tests/skill-shell.test.mjs tests/repowise-cli.test.mjs tests/plugin-command-shell.test.mjs tests/codex-local-plugin-install.test.mjs tests/knowledge-lib.test.mjs tests/preflight.test.mjs tests/pk-benchmark.test.mjs tests/lint.test.mjs tests/governance.test.mjs tests/governance-api.test.mjs tests/init.test.mjs tests/graph-build.test.mjs tests/status.test.mjs tests/crystallize.test.mjs tests/auto-crystallize.test.mjs tests/task-adapters.test.mjs tests/project-graph-shell.test.mjs knowledge/tests/build-graph-data.test.mjs knowledge/tests/graph-runtime.test.mjs knowledge/tests/graph-shell.test.mjs knowledge/tests/serve-knowledge.test.mjs",
     "serve": "node knowledge/tools/serve-knowledge.mjs"
   }
 }

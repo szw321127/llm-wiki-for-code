@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import { buildProjectGraphFromDirectory, normalizeUsageEntry } from "./knowledge-lib.mjs";
 import { filterExistingEvidencePaths, loadEvidencePolicy, normalizeEvidencePaths } from "./evidence-paths.mjs";
+import { resolveProjectTarget } from "./paths.mjs";
 import { scanProject } from "./scan-project.mjs";
 
 const CHINESE_MATCH_PHRASES = [
@@ -47,7 +48,7 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
     return emptyPreflightResult({
       mode: "no-knowledge",
       projectRoot: target,
-      knowledgeRoot: path.join(target, ".project-knowledge"),
+      knowledgeRoot: resolved.knowledgeRoot,
       taskText,
       limits
     });
@@ -130,28 +131,7 @@ export async function runPreflight(projectRootOrKnowledgeRoot = process.cwd(), t
 }
 
 async function resolveProjectKnowledge(target) {
-  if (await exists(path.join(target, "project-profile.md"))) {
-    return {
-      hasKnowledge: true,
-      projectRoot: path.dirname(target),
-      knowledgeRoot: target
-    };
-  }
-
-  const knowledgeRoot = path.join(target, ".project-knowledge");
-  if (await exists(path.join(knowledgeRoot, "project-profile.md"))) {
-    return {
-      hasKnowledge: true,
-      projectRoot: target,
-      knowledgeRoot
-    };
-  }
-
-  return {
-    hasKnowledge: false,
-    projectRoot: target,
-    knowledgeRoot
-  };
+  return resolveProjectTarget(target);
 }
 
 function normalizePreflightLimits(options = {}) {

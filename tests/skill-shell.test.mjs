@@ -15,6 +15,12 @@ test("repository exposes a root skill shell", () => {
 });
 
 test("package.json exposes project knowledge skill commands", () => {
+  assert.equal(packageJson.name, "repowise");
+  assert.notEqual(packageJson.private, true);
+  assert.equal(packageJson.bin.repowise, "./bin/repowise.mjs");
+  assert.ok(packageJson.files.includes("bin/"));
+  assert.ok(packageJson.files.includes("plugins/pk/skills/"));
+  assert.ok(packageJson.files.includes("plugins/pk/scripts/"));
   assert.equal(typeof packageJson.scripts["pk:init"], "string");
   assert.equal(typeof packageJson.scripts["pk:preflight"], "string");
   assert.equal(typeof packageJson.scripts["pk:status"], "string");

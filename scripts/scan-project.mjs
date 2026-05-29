@@ -7,6 +7,7 @@ const IGNORE_DIRECTORIES = new Set([
   ".claude",
   ".codex",
   ".cursor",
+  ".repowise",
   ".project-knowledge",
   ".worktrees",
   "node_modules",

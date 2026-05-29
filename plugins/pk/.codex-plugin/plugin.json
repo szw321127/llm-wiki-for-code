@@ -24,7 +24,7 @@
       "Write"
     ],
     "defaultPrompt": [
-      "Use the `pk-init` skill to initialize `.project-knowledge/` for the current project.",
+      "Use the `pk-init` skill to initialize `.repowise/` for the current project.",
       "Use the `pk-preflight` skill before implementation to retrieve matching practices or local evidence hints.",
       "Use the `pk-status` skill to summarize the current project knowledge state.",
       "Use the `pk-crystallize` skill to persist stable knowledge from the current session.",

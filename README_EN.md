@@ -2,7 +2,7 @@
 
 Persistent codebase wiki for Codex and Claude Code.
 
-LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durable codebase practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.project-knowledge/` directory. Later AI coding sessions can check existing conventions before scanning the same code again.
+LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durable codebase practices, candidate options, decisions, session records, and evidence relationships in a project-owned `.repowise/` directory. Later AI coding sessions can check existing conventions before scanning the same code again.
 
 <p align="center">
   <a href="#verification"><img src="https://img.shields.io/badge/tests-node%20test-0f766e" alt="Tests"></a>
@@ -12,23 +12,22 @@ LLM Wiki for Code is a local wiki and knowledge-graph workflow that stores durab
   [中文文档](README.md) | English
 </p>
 
-The repository and package name are `llm-wiki-for-code`. The assistant plugin keeps the short name `pk`.
+The repository name is `llm-wiki-for-code`. The user-facing CLI is `repowise`; the current assistant plugin keeps the short name `pk` as a compatibility entrypoint.
 
 ## 30-Second Tour
 
 ```bash
-npm run pk:init -- <project-root>
-npm run pk:preflight -- <project-root> "implement HTTP calls"
-npm run pk:auto-crystallize -- <project-root> <auto-crystallize-input.json>
-npm run pk:serve -- <project-root> 8124
+npm install -g repowise
+cd <project-root>
+repowise init
 ```
 
 What happens:
 
-- `pk-init` creates `.project-knowledge/` as a Markdown knowledge base.
-- `pk-preflight` returns matching practices, recommendation pools, and evidence previews before an AI coding task starts.
-- `pk-auto-crystallize` records the session and infers adopted or incubating knowledge after the task ends.
-- `pk-serve` opens a local graph for practices, options, rules, contexts, constraints, sessions, and source evidence.
+- `repowise init` creates `.repowise/` as a Markdown knowledge base.
+- `repowise init` installs Repowise skills into Codex and Claude user-level and project-level skill directories.
+- After that, agents can use `repowise-init` / `repowise-preflight` skills, while this repository can still use the `pk:*` development scripts.
+- `.repowise/open-graph.cmd` opens a local graph for practices, options, rules, contexts, constraints, sessions, and source evidence.
 
 ## Who It Is For
 
@@ -71,7 +70,7 @@ LLM Wiki for Code addresses this by:
 
 ## Core Model
 
-`.project-knowledge/` is the project-level knowledge base and the Markdown source of truth. Graph data, indexes, Obsidian views, and the browser graph are generated from those Markdown files.
+`.repowise/` is the project-level knowledge base and the Markdown source of truth. Graph data, indexes, Obsidian views, and the browser graph are generated from those Markdown files.
 
 Main node types:
 
@@ -113,7 +112,7 @@ source_evidence:
 
 Graph nodes still normalize `source_evidence` to a path array while preserving `symbol`, `reason`, `observed_pattern`, `stability`, and `last_verified_at` in `evidence_records`. Structured evidence on stable nodes should include `reason`; otherwise `pk-lint` reports `wiki-evidence-record-missing-reason`.
 
-The default policy filters common temporary files, local tool state, generated output, and process documents. The README is not the complete hardcoded rule list. Each knowledge base can tune the policy with `.project-knowledge/evidence-policy.json`:
+The default policy filters common temporary files, local tool state, generated output, and process documents. The README is not the complete hardcoded rule list. Each knowledge base can tune the policy with `.repowise/evidence-policy.json`:
 
 ```json
 {
@@ -278,7 +277,7 @@ Or from Codex:
 pk-init
 ```
 
-Initialization creates `.project-knowledge/` in the target project. Projects without this directory return `mode: no-knowledge` and skip project-knowledge workflows.
+Initialization creates `.repowise/` in the target project. Projects without this directory return `mode: no-knowledge` and skip project-knowledge workflows.
 
 ## Quick Start
 
@@ -336,7 +335,7 @@ pk-serve
 npm run pk:init -- <project-root>
 ```
 
-This creates `.project-knowledge/` with:
+This creates `.repowise/` with:
 
 - `project-profile.md`
 - `practices/`
@@ -360,7 +359,7 @@ If a project is not initialized, `pk:preflight` and `pk:auto-crystallize` return
 npm run pk:status -- <project-root>
 ```
 
-Status summarizes the current `.project-knowledge/` state, including node counts and health signals.
+Status summarizes the current `.repowise/` state, including node counts and health signals.
 
 ### Preflight Before a Task
 
@@ -368,7 +367,7 @@ Status summarizes the current `.project-knowledge/` state, including node counts
 npm run pk:preflight -- <project-root> "implement HTTP calls"
 ```
 
-Preflight reads `.project-knowledge/` first:
+Preflight reads `.repowise/` first:
 
 - `mode: knowledge-hit` when existing practices match.
 - `mode: needs-project-scan` when the project is initialized but knowledge is missing.
@@ -501,7 +500,7 @@ npm run pk:serve -- <project-root> 8124
 On Windows, initialized projects can also launch:
 
 ```text
-.project-knowledge/open-graph.cmd
+.repowise/open-graph.cmd
 ```
 
 The graph page supports:
@@ -512,7 +511,7 @@ The graph page supports:
 
 ## Obsidian Compatibility
 
-`.project-knowledge/` can be opened as an Obsidian vault. The workflow maintains:
+`.repowise/` can be opened as an Obsidian vault. The workflow maintains:
 
 - `index.md`: knowledge-base entry point.
 - `log.md`: operation log.

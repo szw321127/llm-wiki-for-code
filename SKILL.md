@@ -1,15 +1,15 @@
 ---
 name: llm-wiki-for-code
-description: Build and maintain a project-serving knowledge base inside the current project's `.project-knowledge/` directory. Use when Codex should initialize a project knowledge base, inspect current project knowledge status, rebuild the project knowledge graph, or crystallize stable knowledge from the current task into project-local Markdown.
+description: Build and maintain a project-serving knowledge base inside the current project's `.repowise/` directory. Use when Codex should initialize a project knowledge base, inspect current project knowledge status, rebuild the project knowledge graph, or crystallize stable knowledge from the current task into project-local Markdown.
 ---
 
 # LLM Wiki for Code Skill
 
-Treat `.project-knowledge/` as the only fact source for a project's persisted knowledge.
+Treat `.repowise/` as the only fact source for a project's persisted knowledge.
 
 ## Core Rules
 
-- Write project knowledge only under `.project-knowledge/`
+- Write project knowledge only under `.repowise/`
 - Read only local code and local docs for `pk-init`
 - Do not read `git log` or browse the web for project analysis
 - Do not modify business code as part of knowledge maintenance
@@ -17,15 +17,15 @@ Treat `.project-knowledge/` as the only fact source for a project's persisted kn
 - Before finishing a task, do one lightweight crystallization judgment
 - Prefer `pk-auto-crystallize` after task completion when touched files and a task summary are available; pass explicit `touchedFiles` when possible, and use git-status fallback only when explicitly intended
 - `pk-auto-crystallize` may read generic `taskId` / `taskDir` process context from `.tasks/`, `tasks/`, or compatible external workflow layouts; process files are not durable source evidence by default
-- If `.project-knowledge/project-profile.md` is missing, skip project knowledge workflows and suggest `pk-init` only when the user wants this project to opt in
+- If `.repowise/project-profile.md` is missing, skip project knowledge workflows and suggest `pk-init` only when the user wants this project to opt in
 - Use `pk-crystallize` with a JSON input file when recording hand-curated adopted nodes or stable updates
 
 ## Skill Entry Points
 
-- `pk-init`: analyze the current project and bootstrap `.project-knowledge/`
+- `pk-init`: analyze the current project and bootstrap `.repowise/`
 - `pk-preflight`: inspect project knowledge before a task and return matching practices, match reasons, task intent, or local evidence hints
 - `pk-status`: summarize current project knowledge state
-- `pk-graph`: rebuild graph data and graph page from `.project-knowledge/`
+- `pk-graph`: rebuild graph data and graph page from `.repowise/`
 - `pk-crystallize`: persist a session and, when justified, update stable or incubating knowledge
 - `pk-auto-crystallize`: infer adopted recommendations or new incubating candidates from task text and touched files
 - `pk-lint`: report recommendation-pool lifecycle governance, evidence health, wiki quality, stale verification, ownership, and possible duplicate knowledge without modifying files
@@ -38,7 +38,7 @@ Treat `.project-knowledge/` as the only fact source for a project's persisted kn
 - New stable insights should default into low-score incubating space unless they are already clearly project defaults
 - `session` records are always allowed; knowledge nodes require stable evidence
 - `source_evidence` may be a string path or a structured record with `path`, `symbol`, `reason`, `observed_pattern`, `stability`, and `last_verified_at`; stable structured records should include `reason`
-- `.project-knowledge/` is an Obsidian-compatible vault; generated node bodies should keep `Links` sections useful for backlink navigation
+- `.repowise/` is an Obsidian-compatible vault; generated node bodies should keep `Links` sections useful for backlink navigation
 - `pk-preflight` output is context-budgeted: load full node Markdown or source files only after a summarized match needs deeper verification
 - `pk-preflight` matches through keywords plus deterministic task intent; use `applies_when` / `does_not_apply_when` for task kinds, technologies, and path prefixes when keywords are too weak
 - `pk-preflight` remains read-only unless explicitly invoked with hit recording, which updates `preflight_hits` and `last_hit_at` in `state/usage-index.json`
